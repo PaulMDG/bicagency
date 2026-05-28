@@ -77,10 +77,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Shop retail, wholesale and preorder in Kenya. Pay via M-Pesa or order on WhatsApp. Fast countrywide delivery." },
       { name: "author", content: "Sokoni KE" },
       { property: "og:title", content: "Sokoni KE — Modern Kenyan eCommerce" },
-      { property: "og:description", content: "Retail, wholesale and preorder shopping with M-Pesa payments." },
+      { property: "og:description", content: "Shop retail, wholesale and preorder in Kenya. Pay via M-Pesa or order on WhatsApp. Fast countrywide delivery." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Sokoni KE — Modern Kenyan eCommerce" },
+      { name: "twitter:description", content: "Shop retail, wholesale and preorder in Kenya. Pay via M-Pesa or order on WhatsApp. Fast countrywide delivery." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8cc7d097-3b96-4dbc-af4d-04a8c2f32e7f/id-preview-e31c99c3--f415c785-588f-43dd-a275-1340bbecd522.lovable.app-1779961678190.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8cc7d097-3b96-4dbc-af4d-04a8c2f32e7f/id-preview-e31c99c3--f415c785-588f-43dd-a275-1340bbecd522.lovable.app-1779961678190.png" },
     ],
     links: [
       {
