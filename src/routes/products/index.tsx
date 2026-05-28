@@ -68,7 +68,7 @@ function ProductsPage() {
             <h1 className="font-display text-3xl">All products</h1>
             <p className="text-sm text-muted-foreground">{products?.length ?? 0} products</p>
           </div>
-          <Select value={sort} onValueChange={(v) => navigate({ search: (s) => ({ ...s, sort: v }) })}>
+          <Select value={sort} onValueChange={(v) => navigate({ search: (s: any) => ({ ...s, sort: v }) })}>
             <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="newest">Newest</SelectItem>
@@ -83,9 +83,9 @@ function ProductsPage() {
             <div>
               <div className="mb-2 text-sm font-medium">Category</div>
               <div className="space-y-1 text-sm">
-                <button onClick={() => navigate({ search: (s) => ({ ...s, cat: "" }) })} className={`block w-full text-left hover:text-primary ${!cat ? "text-primary font-medium" : ""}`}>All categories</button>
+                <button onClick={() => navigate({ search: (s: any) => ({ ...s, cat: "" }) })} className={`block w-full text-left hover:text-primary ${!cat ? "text-primary font-medium" : ""}`}>All categories</button>
                 {(categories ?? []).map((c) => (
-                  <button key={c.id} onClick={() => navigate({ search: (s) => ({ ...s, cat: c.slug }) })} className={`block w-full text-left hover:text-primary ${cat === c.slug ? "text-primary font-medium" : ""}`}>{c.name}</button>
+                  <button key={c.id} onClick={() => navigate({ search: (s: any) => ({ ...s, cat: c.slug }) })} className={`block w-full text-left hover:text-primary ${cat === c.slug ? "text-primary font-medium" : ""}`}>{c.name}</button>
                 ))}
               </div>
             </div>
