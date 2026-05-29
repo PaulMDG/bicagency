@@ -1,1 +1,13 @@
 project_id = "gzawdoixaypajftnrszi"
+
+[functions.mpesa-stk-push]
+verify_jwt = false
+
+[functions.mpesa-callback]
+verify_jwt = false
+
+[functions.provision-admin]
+verify_jwt = false
+
+[functions.bootstrap-admin]
+verify_jwt = false
