@@ -182,31 +182,43 @@ export type Database = {
         Row: {
           amount: number | null
           callback_response: Json | null
+          checkout_request_id: string | null
           created_at: string
           id: string
+          merchant_request_id: string | null
+          mpesa_receipt: string | null
           order_id: string | null
           payment_reference: string | null
           phone_number: string | null
+          result_desc: string | null
           status: string
         }
         Insert: {
           amount?: number | null
           callback_response?: Json | null
+          checkout_request_id?: string | null
           created_at?: string
           id?: string
+          merchant_request_id?: string | null
+          mpesa_receipt?: string | null
           order_id?: string | null
           payment_reference?: string | null
           phone_number?: string | null
+          result_desc?: string | null
           status?: string
         }
         Update: {
           amount?: number | null
           callback_response?: Json | null
+          checkout_request_id?: string | null
           created_at?: string
           id?: string
+          merchant_request_id?: string | null
+          mpesa_receipt?: string | null
           order_id?: string | null
           payment_reference?: string | null
           phone_number?: string | null
+          result_desc?: string | null
           status?: string
         }
         Relationships: [
@@ -390,6 +402,11 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      place_order: { Args: { payload: Json }; Returns: Json }
+      track_order: {
+        Args: { p_order_number: string; p_phone: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin"
