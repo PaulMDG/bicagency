@@ -10,11 +10,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings, buildWaUrl, renderTemplate } from "@/hooks/useSettings";
-import { WhatsAppButton } from "@/components/store/WhatsAppButton";
 import { Loader2, Smartphone } from "lucide-react";
 
 const schema = z.object({
@@ -37,6 +36,9 @@ function Checkout() {
   const [method, setMethod] = useState<"mpesa" | "whatsapp">("mpesa");
   const [stkStatus, setStkStatus] = useState<"idle" | "waiting" | "success" | "failed">("idle");
   const [submitting, setSubmitting] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const purchaseType = items[0]?.purchaseType ?? "retail";
   const hasPreorder = items.some((i) => i.purchaseType === "preorder");
@@ -50,70 +52,73 @@ function Checkout() {
     if (items.length === 0) return;
     setSubmitting(true);
     try {
-      const { data: customer, error: cErr } = await supabase
-        .from("customers")
-        .insert({
+      const normalized = normalizeKenyanPhone(values.phone)!;
+      // Atomic place_order RPC — validates MOQ, checks stock, creates order+items, decrements stock.
+      const payload = {
+        customer: {
           name: values.name,
-          phone: normalizeKenyanPhone(values.phone)!,
+          phone: normalized,
           email: values.email || null,
           delivery_location: values.delivery_location,
-        })
-        .select().single();
-      if (cErr) throw cErr;
-
-      const { data: order, error: oErr } = await supabase
-        .from("orders")
-        .insert({
-          customer_id: customer.id,
-          purchase_type: purchaseType,
-          subtotal,
-          total: subtotal,
-          delivery_location: values.delivery_location,
-          order_notes: values.order_notes || null,
-          payment_method: method,
-          payment_status: "pending",
-        })
-        .select().single();
-      if (oErr) throw oErr;
-
-      const orderItems = items.map((i) => ({
-        order_id: order.id, product_id: i.productId, product_name: i.name,
-        purchase_type: i.purchaseType, unit_price: i.unitPrice, quantity: i.quantity,
-        line_total: i.unitPrice * i.quantity,
-      }));
-      const { error: iErr } = await supabase.from("order_items").insert(orderItems);
-      if (iErr) throw iErr;
+        },
+        purchase_type: purchaseType,
+        payment_method: method,
+        order_notes: values.order_notes ?? null,
+        items: items.map((i) => ({
+          product_id: i.productId,
+          product_name: i.name,
+          purchase_type: i.purchaseType,
+          quantity: i.quantity,
+        })),
+      };
+      const { data, error } = await supabase.rpc("place_order", { payload });
+      if (error) throw error;
+      const created = data as { order_id: string; order_number: string; total: number };
 
       if (method === "mpesa") {
         setStkStatus("waiting");
         const mpesaPhone = normalizeKenyanPhone(values.mpesa_phone || values.phone)!;
-        // TODO: real Daraja API call
-        try {
-          await supabase.functions.invoke("mpesa-stk-push", {
-            body: { order_id: order.id, phone: mpesaPhone, amount: subtotal },
-          });
-        } catch {/* simulated below */}
-        // Simulate result
-        await new Promise((r) => setTimeout(r, 2000));
-        setStkStatus("success");
-        await supabase.from("orders").update({ payment_status: "paid", order_status: "confirmed" }).eq("id", order.id);
-        await supabase.from("payments").insert({
-          order_id: order.id, phone_number: mpesaPhone, amount: subtotal,
-          status: "completed", payment_reference: "SIM" + Date.now(),
+        const { data: stk, error: stkErr } = await supabase.functions.invoke("mpesa-stk-push", {
+          body: { order_id: created.order_id, phone: mpesaPhone, amount: created.total },
         });
+        if (stkErr || (stk as any)?.error) {
+          setStkStatus("failed");
+          toast.error("M-Pesa request failed", { description: (stk as any)?.error ?? stkErr?.message });
+          // Order still exists; user can retry from confirmation page.
+        } else {
+          // Poll order status for up to 90s — callback will flip payment_status to "paid".
+          const start = Date.now();
+          pollRef.current = setInterval(async () => {
+            const { data: o } = await supabase
+              .from("orders").select("payment_status").eq("id", created.order_id).maybeSingle();
+            if (o?.payment_status === "paid") {
+              if (pollRef.current) clearInterval(pollRef.current);
+              setStkStatus("success");
+            } else if (["failed", "cancelled"].includes(o?.payment_status ?? "")) {
+              if (pollRef.current) clearInterval(pollRef.current);
+              setStkStatus("failed");
+            } else if (Date.now() - start > 90_000) {
+              if (pollRef.current) clearInterval(pollRef.current);
+            }
+          }, 3000);
+        }
       } else {
-        // WhatsApp method
         const tpl = settings?.whatsapp_order_template ?? "Order {order_number} {items_summary} Total: KES {total}";
         const summary = items.map((i) => `• ${i.name} x${i.quantity} (${i.purchaseType}) @ ${i.unitPrice.toLocaleString()}`).join("\n");
         const url = buildWaUrl(
           settings?.whatsapp_number ?? "254700000000",
-          renderTemplate(tpl, { order_number: order.order_number, items_summary: summary, total: subtotal.toLocaleString(), customer_name: values.name }),
+          renderTemplate(tpl, {
+            order_number: created.order_number,
+            items_summary: summary,
+            total: created.total.toLocaleString(),
+            customer_name: values.name,
+          }),
         );
         window.open(url, "_blank");
       }
 
       clear();
-      navigate({ to: "/order-confirmation/$orderNumber", params: { orderNumber: order.order_number } });
+      navigate({ to: "/order-confirmation/$orderNumber", params: { orderNumber: created.order_number } });
     } catch (e: any) {
       console.error(e);
       toast.error("Could not place order", { description: e.message });
