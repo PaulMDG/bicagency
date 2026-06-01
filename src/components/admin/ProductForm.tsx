@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { MultiImageUploader, type ProductImage } from "@/components/admin/MultiImageUploader";
 
 interface FormVals {
   name: string; sku: string; slug: string; category_id: string; description: string;
@@ -18,17 +19,25 @@ interface FormVals {
   retail_stock: number; wholesale_available: boolean; preorder_available: boolean;
   wholesale_moq: number; preorder_moq: number; preorder_fallback: string;
   estimated_delivery_days?: number | null; is_featured: boolean; is_active: boolean;
-  image_url: string;
+  subcategory_id?: string | null;
+  supplier_id?: string | null;
 }
 
 export function ProductForm({ productId }: { productId?: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: cats } = useQuery({ queryKey: ["form-cats"], queryFn: async () => (await supabase.from("categories").select("id,name")).data ?? [] });
+  const { data: suppliers } = useQuery({ queryKey: ["form-suppliers"], queryFn: async () => (await supabase.from("suppliers").select("id,name").order("name")).data ?? [] });
   const { data: existing } = useQuery({
     queryKey: ["product-edit", productId],
-    queryFn: async () => productId ? (await supabase.from("products").select("*, product_images(image_url)").eq("id", productId).maybeSingle()).data : null,
+    queryFn: async () => productId ? (await supabase.from("products").select("*, product_images(image_url,is_primary,sort_order)").eq("id", productId).maybeSingle()).data : null,
     enabled: !!productId,
+  });
+  const [images, setImages] = useState<ProductImage[]>([]);
+  const watchCat = (val: string) => val;
+  const { data: subcats } = useQuery({
+    queryKey: ["form-subcats", productId],
+    queryFn: async () => (await supabase.from("subcategories").select("id,name,category_id")).data ?? [],
   });
 
   const form = useForm<FormVals>({
@@ -37,7 +46,8 @@ export function ProductForm({ productId }: { productId?: string }) {
       retail_price: 0, wholesale_price: null, preorder_price: null,
       retail_stock: 0, wholesale_available: false, preorder_available: false,
       wholesale_moq: 1, preorder_moq: 1, preorder_fallback: "retail",
-      estimated_delivery_days: null, is_featured: false, is_active: true, image_url: "",
+      estimated_delivery_days: null, is_featured: false, is_active: true,
+      subcategory_id: null, supplier_id: null,
     },
   });
 
@@ -45,12 +55,18 @@ export function ProductForm({ productId }: { productId?: string }) {
     if (existing) {
       form.reset({
         ...existing,
-        image_url: existing.product_images?.[0]?.image_url ?? "",
         wholesale_price: existing.wholesale_price ?? null,
         preorder_price: existing.preorder_price ?? null,
+        subcategory_id: existing.subcategory_id ?? null,
+        supplier_id: existing.supplier_id ?? null,
       } as any);
+      const imgs = (existing.product_images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order);
+      setImages(imgs);
     }
   }, [existing]);
+
+  const currentCat = form.watch("category_id");
+  const filteredSubcats = (subcats ?? []).filter((s: any) => s.category_id === currentCat);
 
   async function onSubmit(v: FormVals) {
     const payload = {
@@ -63,6 +79,8 @@ export function ProductForm({ productId }: { productId?: string }) {
       preorder_fallback: v.preorder_fallback,
       estimated_delivery_days: v.estimated_delivery_days || null,
       is_featured: v.is_featured, is_active: v.is_active,
+      subcategory_id: v.subcategory_id || null,
+      supplier_id: v.supplier_id || null,
     };
     try {
       let id = productId;
@@ -73,9 +91,13 @@ export function ProductForm({ productId }: { productId?: string }) {
         const { data, error } = await supabase.from("products").insert(payload).select().single();
         if (error) throw error; id = data.id;
       }
-      if (v.image_url && id) {
+      if (id) {
         await supabase.from("product_images").delete().eq("product_id", id);
-        await supabase.from("product_images").insert({ product_id: id, image_url: v.image_url, is_primary: true, sort_order: 0 });
+        if (images.length) {
+          await supabase.from("product_images").insert(
+            images.map((img, i) => ({ product_id: id!, image_url: img.image_url, is_primary: img.is_primary, sort_order: i })),
+          );
+        }
       }
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -95,8 +117,24 @@ export function ProductForm({ productId }: { productId?: string }) {
             <SelectContent>{(cats ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
           </Select>
         </F></Row>
+        <Row>
+          <F label="Subcategory">
+            <Select value={form.watch("subcategory_id") ?? ""} onValueChange={(v) => form.setValue("subcategory_id", v || null)}>
+              <SelectTrigger><SelectValue placeholder={currentCat ? "Select subcategory" : "Pick a category first"} /></SelectTrigger>
+              <SelectContent>{filteredSubcats.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+            </Select>
+          </F>
+          <F label="Supplier">
+            <Select value={form.watch("supplier_id") ?? ""} onValueChange={(v) => form.setValue("supplier_id", v || null)}>
+              <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+              <SelectContent>{(suppliers ?? []).map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+            </Select>
+          </F>
+        </Row>
         <F label="Description"><Textarea rows={4} {...form.register("description")} /></F>
-        <F label="Primary image URL"><Input {...form.register("image_url")} placeholder="https://…" /></F>
+        <F label="Images">
+          <MultiImageUploader value={images} onChange={setImages} />
+        </F>
       </section>
 
       <section className="space-y-3 rounded-xl border bg-card p-5">
