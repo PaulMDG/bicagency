@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author: string | null
+          content_html: string
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published: boolean
+          published_at: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          content_html?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          content_html?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -24,6 +72,7 @@ export type Database = {
           seo_description: string | null
           seo_title: string | null
           slug: string
+          sort_order: number
         }
         Insert: {
           created_at?: string
@@ -34,6 +83,7 @@ export type Database = {
           seo_description?: string | null
           seo_title?: string | null
           slug: string
+          sort_order?: number
         }
         Update: {
           created_at?: string
@@ -44,6 +94,37 @@ export type Database = {
           seo_description?: string | null
           seo_title?: string | null
           slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      customer_accounts: {
+        Row: {
+          created_at: string
+          default_delivery_location: string | null
+          id: string
+          name: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_delivery_location?: string | null
+          id?: string
+          name: string
+          phone: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_delivery_location?: string | null
+          id?: string
+          name?: string
+          phone?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -55,6 +136,7 @@ export type Database = {
           id: string
           name: string
           phone: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -63,6 +145,7 @@ export type Database = {
           id?: string
           name: string
           phone: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -71,6 +154,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -281,6 +365,8 @@ export type Database = {
           retail_stock: number
           sku: string | null
           slug: string
+          subcategory_id: string | null
+          supplier_id: string | null
           updated_at: string
           wholesale_available: boolean
           wholesale_moq: number
@@ -303,6 +389,8 @@ export type Database = {
           retail_stock?: number
           sku?: string | null
           slug: string
+          subcategory_id?: string | null
+          supplier_id?: string | null
           updated_at?: string
           wholesale_available?: boolean
           wholesale_moq?: number
@@ -325,6 +413,8 @@ export type Database = {
           retail_stock?: number
           sku?: string | null
           slug?: string
+          subcategory_id?: string | null
+          supplier_id?: string | null
           updated_at?: string
           wholesale_available?: boolean
           wholesale_moq?: number
@@ -336,6 +426,20 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -364,6 +468,86 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string | null
+        }
+        Relationships: []
+      }
+      subcategories: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -402,6 +586,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      list_my_orders: { Args: never; Returns: Json }
       place_order: { Args: { payload: Json }; Returns: Json }
       track_order: {
         Args: { p_order_number: string; p_phone: string }
