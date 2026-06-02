@@ -22,7 +22,9 @@ import { Route as CategorySlugRouteImport } from './routes/category/$slug'
 import { Route as AdminSuppliersRouteImport } from './routes/admin/suppliers'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
+import { Route as AdminBlogRouteImport } from './routes/admin/blog'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/index'
 import { Route as AdminOrdersIndexRouteImport } from './routes/admin/orders/index'
 import { Route as AdminSettingsWhatsappRouteImport } from './routes/admin/settings/whatsapp'
@@ -30,6 +32,7 @@ import { Route as AdminSettingsStoreRouteImport } from './routes/admin/settings/
 import { Route as AdminSettingsMpesaRouteImport } from './routes/admin/settings/mpesa'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products/new'
 import { Route as AdminOrdersIdRouteImport } from './routes/admin/orders/$id'
+import { Route as AdminBlogNewRouteImport } from './routes/admin/blog/new'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products/$id.edit'
 
 const TrackRoute = TrackRouteImport.update({
@@ -98,9 +101,19 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBlogRoute = AdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
@@ -138,6 +151,11 @@ const AdminOrdersIdRoute = AdminOrdersIdRouteImport.update({
   path: '/orders/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBlogNewRoute = AdminBlogNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminBlogRoute,
+} as any)
 const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
   id: '/products/$id/edit',
   path: '/products/$id/edit',
@@ -150,7 +168,9 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/track': typeof TrackRoute
+  '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/suppliers': typeof AdminSuppliersRoute
@@ -159,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/admin/blog/new': typeof AdminBlogNewRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
@@ -173,7 +194,9 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/track': typeof TrackRoute
+  '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/suppliers': typeof AdminSuppliersRoute
@@ -182,6 +205,7 @@ export interface FileRoutesByTo {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/admin/blog/new': typeof AdminBlogNewRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
@@ -198,7 +222,9 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/track': typeof TrackRoute
+  '/admin/blog': typeof AdminBlogRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/suppliers': typeof AdminSuppliersRoute
@@ -207,6 +233,7 @@ export interface FileRoutesById {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/admin/blog/new': typeof AdminBlogNewRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
@@ -224,7 +251,9 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/track'
+    | '/admin/blog'
     | '/admin/categories'
+    | '/admin/customers'
     | '/admin/login'
     | '/admin/payments'
     | '/admin/suppliers'
@@ -233,6 +262,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin/'
     | '/products/'
+    | '/admin/blog/new'
     | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/settings/mpesa'
@@ -247,7 +277,9 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/track'
+    | '/admin/blog'
     | '/admin/categories'
+    | '/admin/customers'
     | '/admin/login'
     | '/admin/payments'
     | '/admin/suppliers'
@@ -256,6 +288,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin'
     | '/products'
+    | '/admin/blog/new'
     | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/settings/mpesa'
@@ -271,7 +304,9 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/track'
+    | '/admin/blog'
     | '/admin/categories'
+    | '/admin/customers'
     | '/admin/login'
     | '/admin/payments'
     | '/admin/suppliers'
@@ -280,6 +315,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin/'
     | '/products/'
+    | '/admin/blog/new'
     | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/settings/mpesa'
@@ -395,11 +431,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/categories': {
       id: '/admin/categories'
       path: '/categories'
       fullPath: '/admin/categories'
       preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/blog': {
+      id: '/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AdminBlogRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/products/': {
@@ -451,6 +501,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/blog/new': {
+      id: '/admin/blog/new'
+      path: '/new'
+      fullPath: '/admin/blog/new'
+      preLoaderRoute: typeof AdminBlogNewRouteImport
+      parentRoute: typeof AdminBlogRoute
+    }
     '/admin/products/$id/edit': {
       id: '/admin/products/$id/edit'
       path: '/products/$id/edit'
@@ -461,8 +518,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminBlogRouteChildren {
+  AdminBlogNewRoute: typeof AdminBlogNewRoute
+}
+
+const AdminBlogRouteChildren: AdminBlogRouteChildren = {
+  AdminBlogNewRoute: AdminBlogNewRoute,
+}
+
+const AdminBlogRouteWithChildren = AdminBlogRoute._addFileChildren(
+  AdminBlogRouteChildren,
+)
+
 interface AdminRouteChildren {
+  AdminBlogRoute: typeof AdminBlogRouteWithChildren
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminSuppliersRoute: typeof AdminSuppliersRoute
@@ -478,7 +549,9 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBlogRoute: AdminBlogRouteWithChildren,
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminSuppliersRoute: AdminSuppliersRoute,
