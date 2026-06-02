@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useSettings, buildWaUrl, renderTemplate } from "@/hooks/useSettings";
 import { WhatsAppButton } from "@/components/store/WhatsAppButton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { SocialShareButtons } from "@/components/store/SocialShareButtons";
 
 export const Route = createFileRoute("/products/$slug")({
   component: ProductDetail,
@@ -58,10 +59,11 @@ function ProductDetail() {
   const images = (product.product_images ?? []).sort((a: any, b: any) => a.sort_order - b.sort_order);
   const primary = images[activeImg]?.image_url;
   const waNumber = settings?.whatsapp_number ?? "254700000000";
-  const inqTpl = settings?.whatsapp_inquiry_template ?? "Hi, I'm interested in *{product_name}* — Qty: {quantity} ({purchase_type}) at KES {price}.";
+  const productUrl = typeof window !== "undefined" ? `${window.location.origin}/products/${product.slug}` : `/products/${product.slug}`;
+  const inqTpl = settings?.whatsapp_inquiry_template ?? "Hi, I'm interested in *{product_name}* — Qty: {quantity} ({purchase_type}) at KES {price}.\n{product_url}";
   const waUrl = buildWaUrl(
     waNumber,
-    renderTemplate(inqTpl, { product_name: product.name, quantity: qty, purchase_type: type, price: (pricing?.unitPrice ?? 0).toLocaleString() }),
+    renderTemplate(inqTpl, { product_name: product.name, quantity: qty, purchase_type: type, price: (pricing?.unitPrice ?? 0).toLocaleString(), product_url: productUrl }),
   );
 
   return (
@@ -171,6 +173,11 @@ function ProductDetail() {
               </Button>
             </div>
             <WhatsAppButton href={waUrl} className="mt-3 w-full" label="Inquire on WhatsApp" />
+
+            <div className="mt-6 border-t pt-4">
+              <div className="mb-2 text-sm font-medium">Share this product</div>
+              <SocialShareButtons url={productUrl} title={product.name} />
+            </div>
 
             <div className="mt-8">
               <h3 className="font-medium">Description</h3>

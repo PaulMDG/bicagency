@@ -10,7 +10,7 @@ export function MobileNav() {
       <Tab to="/products" icon={<LayoutGrid className="size-5" />} label="Shop" />
       <Tab to="/products" icon={<Search className="size-5" />} label="Search" />
       <Tab to="/cart" icon={<ShoppingCart className="size-5" />} label="Cart" badge={count} />
-      <Tab to="/admin/login" icon={<User className="size-5" />} label="Account" />
+      <Tab to="/account/login" icon={<User className="size-5" />} label="Account" />
     </nav>
   );
 }

@@ -20,6 +20,9 @@ export function StoreHeader() {
         <nav className="ml-2 hidden gap-5 text-sm md:flex">
           <Link to="/" className="hover:text-primary" activeProps={{ className: "text-primary font-medium" }}>Home</Link>
           <Link to="/products" className="hover:text-primary" activeProps={{ className: "text-primary font-medium" }}>Shop</Link>
+          <Link to="/blog" className="hover:text-primary" activeProps={{ className: "text-primary font-medium" }}>Blog</Link>
+          <Link to="/about" className="hover:text-primary" activeProps={{ className: "text-primary font-medium" }}>About</Link>
+          <Link to="/track" className="hover:text-primary" activeProps={{ className: "text-primary font-medium" }}>Track order</Link>
         </nav>
         <div className="ml-auto hidden flex-1 max-w-sm md:block">
           <form action="/products" className="relative">

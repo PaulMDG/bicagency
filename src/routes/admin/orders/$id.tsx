@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatKES } from "@/lib/format";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useSettings, buildWaUrl, renderTemplate } from "@/hooks/useSettings";
+import { MessageCircle } from "lucide-react";
 
 export const Route = createFileRoute("/admin/orders/$id")({ component: OrderDetail });
 
@@ -12,6 +15,7 @@ const STATUSES = ["new", "confirmed", "processing", "shipped", "delivered", "can
 function OrderDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
+  const { data: settings } = useSettings();
   const { data: o } = useQuery({
     queryKey: ["adm-order", id],
     queryFn: async () => (await supabase.from("orders").select("*, customers(*), order_items(*), payments(*)").eq("id", id).maybeSingle()).data,
@@ -20,6 +24,25 @@ function OrderDetail() {
   async function setStatus(s: string) {
     const { error } = await supabase.from("orders").update({ order_status: s }).eq("id", id);
     if (error) toast.error(error.message); else { toast.success("Status updated"); qc.invalidateQueries({ queryKey: ["adm-order", id] }); }
+  }
+  function notify(kind: "paid" | "shipped" | "delivered" | "failed" | "confirmed") {
+    if (!o) return;
+    const tplKey = `wa_template_${kind}`;
+    const fallback: Record<string, string> = {
+      paid: "Hi {customer_name}, we've received your payment for order {order_number}. Total: KES {total}. Thank you!",
+      confirmed: "Hi {customer_name}, your order {order_number} is confirmed. We'll update you when it ships.",
+      shipped: "Hi {customer_name}, order {order_number} has shipped and is on the way.",
+      delivered: "Hi {customer_name}, order {order_number} was delivered. Enjoy!",
+      failed: "Hi {customer_name}, payment for order {order_number} failed. Please retry on our site.",
+    };
+    const tpl = settings?.[tplKey] ?? fallback[kind];
+    const msg = renderTemplate(tpl, {
+      customer_name: o.customers?.name ?? "",
+      order_number: o.order_number,
+      total: Number(o.total).toLocaleString(),
+    });
+    const phone = (o.customers?.phone ?? "").replace(/\D/g, "");
+    window.open(buildWaUrl(phone, msg), "_blank");
   }
   return (
     <div className="mx-auto max-w-3xl space-y-4">
@@ -39,6 +62,17 @@ function OrderDetail() {
               <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
             </Select>
           </div>
+        </div>
+      </div>
+      <div className="rounded-xl border bg-card p-4">
+        <div className="mb-2 font-medium">Notify customer on WhatsApp</div>
+        <p className="mb-3 text-xs text-muted-foreground">Opens WhatsApp with a pre-filled message to {o.customers?.phone}. Edit templates in Settings → WhatsApp.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={() => notify("confirmed")}><MessageCircle className="size-4" /> Confirmed</Button>
+          <Button size="sm" variant="outline" onClick={() => notify("paid")}><MessageCircle className="size-4" /> Payment received</Button>
+          <Button size="sm" variant="outline" onClick={() => notify("shipped")}><MessageCircle className="size-4" /> Shipped</Button>
+          <Button size="sm" variant="outline" onClick={() => notify("delivered")}><MessageCircle className="size-4" /> Delivered</Button>
+          <Button size="sm" variant="outline" onClick={() => notify("failed")}><MessageCircle className="size-4" /> Payment failed</Button>
         </div>
       </div>
       <div className="rounded-xl border bg-card p-4">
