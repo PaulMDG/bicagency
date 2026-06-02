@@ -19,6 +19,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ProductsSlugRouteImport } from './routes/products/$slug'
 import { Route as OrderConfirmationOrderNumberRouteImport } from './routes/order-confirmation/$orderNumber'
 import { Route as CategorySlugRouteImport } from './routes/category/$slug'
+import { Route as AdminSuppliersRouteImport } from './routes/admin/suppliers'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
@@ -81,6 +82,11 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   id: '/category/$slug',
   path: '/category/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSuppliersRoute = AdminSuppliersRouteImport.update({
+  id: '/suppliers',
+  path: '/suppliers',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   id: '/payments',
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/suppliers': typeof AdminSuppliersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order-confirmation/$orderNumber': typeof OrderConfirmationOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/suppliers': typeof AdminSuppliersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order-confirmation/$orderNumber': typeof OrderConfirmationOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/suppliers': typeof AdminSuppliersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order-confirmation/$orderNumber': typeof OrderConfirmationOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -218,6 +227,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/suppliers'
     | '/category/$slug'
     | '/order-confirmation/$orderNumber'
     | '/products/$slug'
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/suppliers'
     | '/category/$slug'
     | '/order-confirmation/$orderNumber'
     | '/products/$slug'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/suppliers'
     | '/category/$slug'
     | '/order-confirmation/$orderNumber'
     | '/products/$slug'
@@ -362,6 +374,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/suppliers': {
+      id: '/admin/suppliers'
+      path: '/suppliers'
+      fullPath: '/admin/suppliers'
+      preLoaderRoute: typeof AdminSuppliersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/payments': {
       id: '/admin/payments'
       path: '/payments'
@@ -446,6 +465,7 @@ interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminSuppliersRoute: typeof AdminSuppliersRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminOrdersIdRoute: typeof AdminOrdersIdRoute
   AdminProductsNewRoute: typeof AdminProductsNewRoute
@@ -461,6 +481,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminSuppliersRoute: AdminSuppliersRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminOrdersIdRoute: AdminOrdersIdRoute,
   AdminProductsNewRoute: AdminProductsNewRoute,
