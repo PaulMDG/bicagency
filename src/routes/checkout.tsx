@@ -61,6 +61,7 @@ function Checkout() {
           email: values.email || null,
           delivery_location: values.delivery_location,
         },
+        auth_user_id: (await supabase.auth.getUser()).data.user?.id ?? null,
         purchase_type: purchaseType,
         payment_method: method,
         order_notes: values.order_notes ?? null,
