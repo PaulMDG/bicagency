@@ -13,6 +13,7 @@ import { Route as TrackRouteImport } from './routes/track'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -34,6 +35,7 @@ import { Route as AdminProductsNewRouteImport } from './routes/admin/products/ne
 import { Route as AdminOrdersIdRouteImport } from './routes/admin/orders/$id'
 import { Route as AdminBlogNewRouteImport } from './routes/admin/blog/new'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products/$id.edit'
+import { Route as AdminBlogIdEditRouteImport } from './routes/admin/blog/$id.edit'
 
 const TrackRoute = TrackRouteImport.update({
   id: '/track',
@@ -53,6 +55,11 @@ const CartRoute = CartRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -161,9 +168,15 @@ const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
   path: '/products/$id/edit',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBlogIdEditRoute = AdminBlogIdEditRouteImport.update({
+  id: '/$id/edit',
+  path: '/$id/edit',
+  getParentRoute: () => AdminBlogRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -187,10 +200,12 @@ export interface FileRoutesByFullPath {
   '/admin/settings/whatsapp': typeof AdminSettingsWhatsappRoute
   '/admin/orders/': typeof AdminOrdersIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
+  '/admin/blog/$id/edit': typeof AdminBlogIdEditRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/track': typeof TrackRoute
@@ -213,11 +228,13 @@ export interface FileRoutesByTo {
   '/admin/settings/whatsapp': typeof AdminSettingsWhatsappRoute
   '/admin/orders': typeof AdminOrdersIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
+  '/admin/blog/$id/edit': typeof AdminBlogIdEditRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -241,12 +258,14 @@ export interface FileRoutesById {
   '/admin/settings/whatsapp': typeof AdminSettingsWhatsappRoute
   '/admin/orders/': typeof AdminOrdersIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
+  '/admin/blog/$id/edit': typeof AdminBlogIdEditRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/admin'
     | '/cart'
     | '/checkout'
@@ -270,10 +289,12 @@ export interface FileRouteTypes {
     | '/admin/settings/whatsapp'
     | '/admin/orders/'
     | '/admin/products/'
+    | '/admin/blog/$id/edit'
     | '/admin/products/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/cart'
     | '/checkout'
     | '/track'
@@ -296,10 +317,12 @@ export interface FileRouteTypes {
     | '/admin/settings/whatsapp'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/blog/$id/edit'
     | '/admin/products/$id/edit'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/admin'
     | '/cart'
     | '/checkout'
@@ -323,11 +346,13 @@ export interface FileRouteTypes {
     | '/admin/settings/whatsapp'
     | '/admin/orders/'
     | '/admin/products/'
+    | '/admin/blog/$id/edit'
     | '/admin/products/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
@@ -366,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -515,15 +547,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsIdEditRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/blog/$id/edit': {
+      id: '/admin/blog/$id/edit'
+      path: '/$id/edit'
+      fullPath: '/admin/blog/$id/edit'
+      preLoaderRoute: typeof AdminBlogIdEditRouteImport
+      parentRoute: typeof AdminBlogRoute
+    }
   }
 }
 
 interface AdminBlogRouteChildren {
   AdminBlogNewRoute: typeof AdminBlogNewRoute
+  AdminBlogIdEditRoute: typeof AdminBlogIdEditRoute
 }
 
 const AdminBlogRouteChildren: AdminBlogRouteChildren = {
   AdminBlogNewRoute: AdminBlogNewRoute,
+  AdminBlogIdEditRoute: AdminBlogIdEditRoute,
 }
 
 const AdminBlogRouteWithChildren = AdminBlogRoute._addFileChildren(
@@ -570,6 +611,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
