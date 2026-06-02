@@ -26,6 +26,7 @@ function OrderDetail() {
     if (error) toast.error(error.message); else { toast.success("Status updated"); qc.invalidateQueries({ queryKey: ["adm-order", id] }); }
   }
   function notify(kind: "paid" | "shipped" | "delivered" | "failed" | "confirmed") {
+    if (!o) return;
     const tplKey = `wa_template_${kind}`;
     const fallback: Record<string, string> = {
       paid: "Hi {customer_name}, we've received your payment for order {order_number}. Total: KES {total}. Thank you!",
