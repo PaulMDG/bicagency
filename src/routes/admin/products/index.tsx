@@ -3,16 +3,23 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { formatKES } from "@/lib/format";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 export const Route = createFileRoute("/admin/products/")({ component: AdminProducts });
 
 function AdminProducts() {
   const qc = useQueryClient();
+  const [q, setQ] = useState("");
   const { data: products } = useQuery({
-    queryKey: ["admin-products"],
-    queryFn: async () => (await supabase.from("products").select("id,name,sku,retail_price,retail_stock,is_active,wholesale_available,preorder_available,categories(name)").order("created_at", { ascending: false })).data ?? [],
+    queryKey: ["admin-products", q],
+    queryFn: async () => {
+      let qb = supabase.from("products").select("id,name,sku,retail_price,retail_stock,is_active,wholesale_available,preorder_available,categories(name)").order("created_at", { ascending: false });
+      if (q.trim()) qb = qb.or(`name.ilike.%${q}%,sku.ilike.%${q}%`);
+      return (await qb).data ?? [];
+    },
   });
 
   async function del(id: string) {
@@ -26,6 +33,10 @@ function AdminProducts() {
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl">Products</h1>
         <Button asChild><Link to="/admin/products/new"><Plus className="size-4" /> Add product</Link></Button>
+      </div>
+      <div className="relative max-w-sm">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or SKU…" className="pl-9" />
       </div>
       <div className="overflow-x-auto rounded-xl border bg-card">
         <table className="w-full text-sm">

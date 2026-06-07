@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 const PAGE_SIZE = 12;
 
@@ -90,15 +91,26 @@ function ProductsPage() {
             <h1 className="font-display text-3xl">All products</h1>
             <p className="text-sm text-muted-foreground">{total} products</p>
           </div>
-          <Select value={sort} onValueChange={(v) => setSearch({ sort: v })}>
-            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="featured">Featured</SelectItem>
-              <SelectItem value="price-asc">Price: Low → High</SelectItem>
-              <SelectItem value="price-desc">Price: High → Low</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
+            <div className="relative w-full max-w-xs">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={q}
+                onChange={(e) => setSearch({ q: e.target.value })}
+                placeholder="Search products"
+                className="pl-9"
+              />
+            </div>
+            <Select value={sort} onValueChange={(v) => setSearch({ sort: v })}>
+              <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="featured">Featured</SelectItem>
+                <SelectItem value="price-asc">Price: Low → High</SelectItem>
+                <SelectItem value="price-desc">Price: High → Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="grid gap-6 md:grid-cols-[220px_1fr]">
           <aside className="space-y-6 md:sticky md:top-20 md:self-start">
