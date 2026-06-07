@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { slugify } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { MultiImageUploader, type ProductImage } from "@/components/admin/MultiImageUploader";
+import { ProductLinkInserter } from "@/components/admin/ProductLinkInserter";
 
 interface FormVals {
   name: string; sku: string; slug: string; category_id: string; description: string;
@@ -21,6 +22,8 @@ interface FormVals {
   estimated_delivery_days?: number | null; is_featured: boolean; is_active: boolean;
   subcategory_id?: string | null;
   supplier_id?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
 }
 
 export function ProductForm({ productId }: { productId?: string }) {
@@ -48,6 +51,7 @@ export function ProductForm({ productId }: { productId?: string }) {
       wholesale_moq: 1, preorder_moq: 1, preorder_fallback: "retail",
       estimated_delivery_days: null, is_featured: false, is_active: true,
       subcategory_id: null, supplier_id: null,
+      seo_title: "", seo_description: "",
     },
   });
 
@@ -59,6 +63,8 @@ export function ProductForm({ productId }: { productId?: string }) {
         preorder_price: existing.preorder_price ?? null,
         subcategory_id: existing.subcategory_id ?? null,
         supplier_id: existing.supplier_id ?? null,
+        seo_title: existing.seo_title ?? "",
+        seo_description: existing.seo_description ?? "",
       } as any);
       const imgs = (existing.product_images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order);
       setImages(imgs);
@@ -81,6 +87,8 @@ export function ProductForm({ productId }: { productId?: string }) {
       is_featured: v.is_featured, is_active: v.is_active,
       subcategory_id: v.subcategory_id || null,
       supplier_id: v.supplier_id || null,
+      seo_title: v.seo_title || null,
+      seo_description: v.seo_description || null,
     };
     try {
       let id = productId;
@@ -131,10 +139,22 @@ export function ProductForm({ productId }: { productId?: string }) {
             </Select>
           </F>
         </Row>
-        <F label="Description"><Textarea rows={4} {...form.register("description")} /></F>
+        <F label="Description">
+          <div className="mb-2">
+            <ProductLinkInserter onInsert={(s) => form.setValue("description", (form.getValues("description") || "") + " " + s)} />
+            <p className="mt-1 text-xs text-muted-foreground">HTML allowed. Use the button to insert links to other products.</p>
+          </div>
+          <Textarea rows={6} {...form.register("description")} />
+        </F>
         <F label="Images">
           <MultiImageUploader value={images} onChange={setImages} />
         </F>
+      </section>
+
+      <section className="space-y-3 rounded-xl border bg-card p-5">
+        <h2 className="font-medium">SEO</h2>
+        <F label="SEO title"><Input {...form.register("seo_title")} placeholder="Defaults to product name" /></F>
+        <F label="SEO description"><Textarea rows={2} {...form.register("seo_description")} placeholder="Shown in search results & social previews" /></F>
       </section>
 
       <section className="space-y-3 rounded-xl border bg-card p-5">

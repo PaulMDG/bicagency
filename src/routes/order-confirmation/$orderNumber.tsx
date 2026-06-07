@@ -4,7 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { StoreLayout } from "@/components/layout/StoreLayout";
 import { Button } from "@/components/ui/button";
 import { formatKES } from "@/lib/format";
-import { CheckCircle2, Package } from "lucide-react";
+import { CheckCircle2, Package, Copy, Check } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useSettings, buildWaUrl, renderTemplate } from "@/hooks/useSettings";
+import { WhatsAppButton } from "@/components/store/WhatsAppButton";
 
 export const Route = createFileRoute("/order-confirmation/$orderNumber")({
   component: Confirmation,
@@ -12,17 +16,41 @@ export const Route = createFileRoute("/order-confirmation/$orderNumber")({
 
 function Confirmation() {
   const { orderNumber } = Route.useParams();
+  const { data: settings } = useSettings();
+  const [copied, setCopied] = useState(false);
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", orderNumber],
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(*)")
+        .select("*, order_items(*, products(estimated_delivery_days,preorder_moq,wholesale_moq))")
         .eq("order_number", orderNumber)
         .maybeSingle();
       return data;
     },
   });
+
+  const items = order?.order_items ?? [];
+  const preorderItems = items.filter((i: any) => i.purchase_type === "preorder");
+  const maxEta = preorderItems.reduce((m: number, i: any) => Math.max(m, i.products?.estimated_delivery_days ?? 0), 0);
+
+  const summary = items.map((i: any) =>
+    `• ${i.product_name} x${i.quantity} (${i.purchase_type}) @ ${Number(i.unit_price).toLocaleString()}`
+  ).join("\n");
+  const waText = order
+    ? renderTemplate(
+        settings?.whatsapp_order_template ?? "Order {order_number}\n{items_summary}\nTotal: KES {total}",
+        { order_number: order.order_number, items_summary: summary, total: Number(order.total).toLocaleString(), customer_name: "" },
+      )
+    : "";
+  const waUrl = order ? buildWaUrl(settings?.whatsapp_number ?? "254700000000", waText) : "";
+
+  async function copyWa() {
+    try { await navigator.clipboard.writeText(waText); setCopied(true); toast.success("Summary copied"); setTimeout(() => setCopied(false), 2000); }
+    catch { toast.error("Copy failed"); }
+  }
+
+  const typeLabel = (t: string) => t === "preorder" ? "Preorder" : t === "wholesale" ? "Wholesale" : "Retail";
 
   return (
     <StoreLayout>
@@ -36,20 +64,47 @@ function Confirmation() {
             <div className="mt-6 text-left">
               <div className="text-sm text-muted-foreground">Status: <span className="font-medium capitalize text-foreground">{order.order_status}</span> · Payment: <span className="font-medium capitalize text-foreground">{order.payment_status}</span></div>
               <hr className="my-4" />
-              <ul className="space-y-2 text-sm">
-                {order.order_items?.map((i: any) => (
-                  <li key={i.id} className="flex justify-between">
-                    <span>{i.product_name} <span className="text-muted-foreground">x{i.quantity}</span> <span className="text-xs text-muted-foreground capitalize">({i.purchase_type})</span></span>
-                    <span>{formatKES(Number(i.line_total))}</span>
-                  </li>
-                ))}
+              <ul className="space-y-3 text-sm">
+                {items.map((i: any) => {
+                  const moq = i.purchase_type === "preorder" ? i.products?.preorder_moq : i.purchase_type === "wholesale" ? i.products?.wholesale_moq : null;
+                  const eta = i.purchase_type === "preorder" ? i.products?.estimated_delivery_days : null;
+                  return (
+                    <li key={i.id} className="rounded-lg border p-3">
+                      <div className="flex justify-between gap-2">
+                        <div>
+                          <div className="font-medium">{i.product_name} <span className="text-muted-foreground">x{i.quantity}</span></div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs">
+                            <span className={`rounded-full px-2 py-0.5 ${i.purchase_type === "preorder" ? "bg-accent/15 text-accent-foreground" : i.purchase_type === "wholesale" ? "bg-primary/10 text-primary" : "bg-muted"}`}>{typeLabel(i.purchase_type)}</span>
+                            {moq ? <span className="text-muted-foreground">MOQ {moq}</span> : null}
+                            {eta ? <span className="text-muted-foreground">· ETA ~{eta} days</span> : null}
+                          </div>
+                        </div>
+                        <div className="whitespace-nowrap">{formatKES(Number(i.line_total))}</div>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
               <div className="mt-3 flex justify-between font-semibold"><span>Total</span><span>{formatKES(Number(order.total))}</span></div>
-              {order.order_items?.some((i: any) => i.purchase_type === "preorder") && (
+              {preorderItems.length > 0 && (
                 <div className="mt-4 flex items-start gap-2 rounded-md bg-accent/10 p-3 text-sm">
-                  <Package className="mt-0.5 size-4" /> Includes preorder items — we'll update you with delivery details.
+                  <Package className="mt-0.5 size-4" />
+                  <div>
+                    <div className="font-medium">Preorder items included</div>
+                    <div className="text-muted-foreground">Estimated delivery in {maxEta || "—"} days. We'll contact you with shipping updates.</div>
+                  </div>
                 </div>
               )}
+              <div className="mt-5 rounded-xl border bg-muted/40 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">WhatsApp order summary</div>
+                  <button onClick={copyWa} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                    {copied ? <><Check className="size-3" /> Copied</> : <><Copy className="size-3" /> Copy</>}
+                  </button>
+                </div>
+                <pre className="whitespace-pre-wrap break-words text-xs text-foreground">{waText}</pre>
+                <WhatsAppButton href={waUrl} className="mt-3 w-full" label="Send via WhatsApp" />
+              </div>
             </div>
           ) : null}
           <Button asChild className="mt-6"><Link to="/products">Continue shopping</Link></Button>

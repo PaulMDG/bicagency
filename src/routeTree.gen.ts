@@ -37,6 +37,7 @@ import { Route as AdminProductsIndexRouteImport } from './routes/admin/products/
 import { Route as AdminOrdersIndexRouteImport } from './routes/admin/orders/index'
 import { Route as AdminSettingsWhatsappRouteImport } from './routes/admin/settings/whatsapp'
 import { Route as AdminSettingsStoreRouteImport } from './routes/admin/settings/store'
+import { Route as AdminSettingsSeoRouteImport } from './routes/admin/settings/seo'
 import { Route as AdminSettingsMpesaRouteImport } from './routes/admin/settings/mpesa'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products/new'
 import { Route as AdminOrdersIdRouteImport } from './routes/admin/orders/$id'
@@ -185,6 +186,11 @@ const AdminSettingsStoreRoute = AdminSettingsStoreRouteImport.update({
   path: '/settings/store',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsSeoRoute = AdminSettingsSeoRouteImport.update({
+  id: '/settings/seo',
+  path: '/settings/seo',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSettingsMpesaRoute = AdminSettingsMpesaRouteImport.update({
   id: '/settings/mpesa',
   path: '/settings/mpesa',
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
+  '/admin/settings/seo': typeof AdminSettingsSeoRoute
   '/admin/settings/store': typeof AdminSettingsStoreRoute
   '/admin/settings/whatsapp': typeof AdminSettingsWhatsappRoute
   '/admin/orders/': typeof AdminOrdersIndexRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
+  '/admin/settings/seo': typeof AdminSettingsSeoRoute
   '/admin/settings/store': typeof AdminSettingsStoreRoute
   '/admin/settings/whatsapp': typeof AdminSettingsWhatsappRoute
   '/admin/orders': typeof AdminOrdersIndexRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
+  '/admin/settings/seo': typeof AdminSettingsSeoRoute
   '/admin/settings/store': typeof AdminSettingsStoreRoute
   '/admin/settings/whatsapp': typeof AdminSettingsWhatsappRoute
   '/admin/orders/': typeof AdminOrdersIndexRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/settings/mpesa'
+    | '/admin/settings/seo'
     | '/admin/settings/store'
     | '/admin/settings/whatsapp'
     | '/admin/orders/'
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/settings/mpesa'
+    | '/admin/settings/seo'
     | '/admin/settings/store'
     | '/admin/settings/whatsapp'
     | '/admin/orders'
@@ -426,6 +437,7 @@ export interface FileRouteTypes {
     | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/settings/mpesa'
+    | '/admin/settings/seo'
     | '/admin/settings/store'
     | '/admin/settings/whatsapp'
     | '/admin/orders/'
@@ -652,6 +664,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsStoreRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings/seo': {
+      id: '/admin/settings/seo'
+      path: '/settings/seo'
+      fullPath: '/admin/settings/seo'
+      preLoaderRoute: typeof AdminSettingsSeoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/settings/mpesa': {
       id: '/admin/settings/mpesa'
       path: '/settings/mpesa'
@@ -722,6 +741,7 @@ interface AdminRouteChildren {
   AdminOrdersIdRoute: typeof AdminOrdersIdRoute
   AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminSettingsMpesaRoute: typeof AdminSettingsMpesaRoute
+  AdminSettingsSeoRoute: typeof AdminSettingsSeoRoute
   AdminSettingsStoreRoute: typeof AdminSettingsStoreRoute
   AdminSettingsWhatsappRoute: typeof AdminSettingsWhatsappRoute
   AdminOrdersIndexRoute: typeof AdminOrdersIndexRoute
@@ -740,6 +760,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminOrdersIdRoute: AdminOrdersIdRoute,
   AdminProductsNewRoute: AdminProductsNewRoute,
   AdminSettingsMpesaRoute: AdminSettingsMpesaRoute,
+  AdminSettingsSeoRoute: AdminSettingsSeoRoute,
   AdminSettingsStoreRoute: AdminSettingsStoreRoute,
   AdminSettingsWhatsappRoute: AdminSettingsWhatsappRoute,
   AdminOrdersIndexRoute: AdminOrdersIndexRoute,
