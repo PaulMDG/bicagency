@@ -5,14 +5,36 @@ import { StoreLayout } from "@/components/layout/StoreLayout";
 import { sanitizeHtml } from "@/lib/safe-html";
 import { SocialShareButtons } from "@/components/store/SocialShareButtons";
 
-export const Route = createFileRoute("/blog/$slug")({ component: BlogDetail });
+const postQuery = (slug: string) => ({
+  queryKey: ["blog-post", slug],
+  queryFn: async () =>
+    (await supabase.from("blog_posts").select("*").eq("slug", slug).eq("published", true).maybeSingle()).data,
+});
+
+export const Route = createFileRoute("/blog/$slug")({
+  loader: ({ params, context }) => context.queryClient.ensureQueryData(postQuery(params.slug)),
+  head: ({ loaderData }) => {
+    const p: any = loaderData;
+    const title = p?.seo_title || p?.title || "Blog post";
+    const description = p?.seo_description || p?.excerpt || "";
+    const img = p?.cover_image_url;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "article" },
+        ...(img ? [{ property: "og:image", content: img }, { name: "twitter:image", content: img }] : []),
+      ],
+    };
+  },
+  component: BlogDetail,
+});
 
 function BlogDetail() {
   const { slug } = Route.useParams();
-  const { data: post, isLoading } = useQuery({
-    queryKey: ["blog-post", slug],
-    queryFn: async () => (await supabase.from("blog_posts").select("*").eq("slug", slug).eq("published", true).maybeSingle()).data,
-  });
+  const { data: post, isLoading } = useQuery(postQuery(slug));
   if (isLoading) return <StoreLayout><div className="p-12 text-center text-muted-foreground">Loading…</div></StoreLayout>;
   if (!post) return <StoreLayout><div className="p-12 text-center">Post not found. <Link to="/blog" className="text-primary underline">All posts</Link></div></StoreLayout>;
   const url = typeof window !== "undefined" ? window.location.href : "";

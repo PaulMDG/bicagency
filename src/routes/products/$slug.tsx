@@ -14,8 +14,39 @@ import { useSettings, buildWaUrl, renderTemplate } from "@/hooks/useSettings";
 import { WhatsAppButton } from "@/components/store/WhatsAppButton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { SocialShareButtons } from "@/components/store/SocialShareButtons";
+import { sanitizeHtml } from "@/lib/safe-html";
+
+const productQuery = (slug: string) => ({
+  queryKey: ["product", slug],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*, categories(name,slug), product_images(id,image_url,sort_order,is_primary), suppliers(id,name,contact_name,phone,email,address)")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+});
 
 export const Route = createFileRoute("/products/$slug")({
+  loader: ({ params, context }) => context.queryClient.ensureQueryData(productQuery(params.slug)),
+  head: ({ loaderData, params }) => {
+    const p: any = loaderData;
+    const title = p?.seo_title || p?.name || "Product";
+    const description = p?.seo_description || (p?.description ? String(p.description).replace(/<[^>]+>/g, "").slice(0, 160) : "");
+    const img = p?.product_images?.[0]?.image_url;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "product" },
+        ...(img ? [{ property: "og:image", content: img }, { name: "twitter:image", content: img }] : []),
+      ],
+    };
+  },
   component: ProductDetail,
 });
 
@@ -24,18 +55,7 @@ function ProductDetail() {
   const add = useCart((s) => s.add);
   const { data: settings } = useSettings();
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ["product", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, categories(name,slug), product_images(id,image_url,sort_order,is_primary)")
-        .eq("slug", slug)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { data: product, isLoading } = useQuery(productQuery(slug));
 
   const [qty, setQty] = useState(1);
   const [type, setType] = useState<PurchaseType>("retail");
@@ -181,8 +201,21 @@ function ProductDetail() {
 
             <div className="mt-8">
               <h3 className="font-medium">Description</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{product.description}</p>
+              <div
+                className="prose prose-sm mt-2 max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description ?? "") }}
+              />
             </div>
+
+            {product.suppliers && (
+              <div className="mt-6 rounded-xl border bg-card p-4 text-sm">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Sold by</div>
+                <div className="mt-1 font-medium">{(product.suppliers as any).name}</div>
+                {(product.suppliers as any).address && (
+                  <div className="text-xs text-muted-foreground">{(product.suppliers as any).address}</div>
+                )}
+              </div>
+            )}
 
             <Accordion type="single" collapsible className="mt-6">
               <AccordionItem value="delivery">

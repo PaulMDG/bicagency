@@ -2,16 +2,33 @@ import { createFileRoute } from "@tanstack/react-router";
 import { StoreLayout } from "@/components/layout/StoreLayout";
 import { useSettings } from "@/hooks/useSettings";
 import { sanitizeHtml } from "@/lib/safe-html";
+import { supabase } from "@/integrations/supabase/client";
+
+const settingsQuery = {
+  queryKey: ["settings"],
+  queryFn: async () => {
+    const { data } = await supabase.from("settings").select("key,value");
+    const m: Record<string, string> = {};
+    (data ?? []).forEach((r: any) => { m[r.key] = r.value ?? ""; });
+    return m;
+  },
+};
 
 export const Route = createFileRoute("/about")({
-  head: () => ({
-    meta: [
-      { title: "About Us" },
-      { name: "description", content: "Learn more about our store, mission and the team behind it." },
-      { property: "og:title", content: "About Us" },
-      { property: "og:description", content: "Learn more about our store, mission and the team behind it." },
-    ],
-  }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(settingsQuery),
+  head: ({ loaderData }) => {
+    const s = (loaderData ?? {}) as Record<string, string>;
+    const title = s.seo_about_title || `About — ${s.store_name || "Us"}`;
+    const description = s.seo_about_description || "Learn more about our store, mission and the team behind it.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+      ],
+    };
+  },
   component: AboutPage,
 });
 
