@@ -363,6 +363,8 @@ export type Database = {
           preorder_price: number | null
           retail_price: number
           retail_stock: number
+          seo_description: string | null
+          seo_title: string | null
           sku: string | null
           slug: string
           subcategory_id: string | null
@@ -387,6 +389,8 @@ export type Database = {
           preorder_price?: number | null
           retail_price: number
           retail_stock?: number
+          seo_description?: string | null
+          seo_title?: string | null
           sku?: string | null
           slug: string
           subcategory_id?: string | null
@@ -411,6 +415,8 @@ export type Database = {
           preorder_price?: number | null
           retail_price?: number
           retail_stock?: number
+          seo_description?: string | null
+          seo_title?: string | null
           sku?: string | null
           slug?: string
           subcategory_id?: string | null
