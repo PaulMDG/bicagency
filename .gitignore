@@ -30,3 +30,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Add .env to .gitignore if not already there
+echo ".env" >> .gitignore
+echo ".env.local" >> .gitignore
+
+# Remove it from git tracking (keeps the file locally)
+git rm --cached .env
+git add .gitignore
+git commit -m "chore: stop tracking .env, add to gitignore"
+git push
