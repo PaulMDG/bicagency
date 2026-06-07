@@ -11,6 +11,7 @@ import { uploadImage } from "@/lib/storage";
 import { sanitizeHtml } from "@/lib/safe-html";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { ProductLinkInserter } from "@/components/admin/ProductLinkInserter";
 
 type Form = {
   slug: string; title: string; excerpt: string; content_html: string;
@@ -85,6 +86,9 @@ export function BlogPostForm({ postId }: { postId?: string }) {
         </div>
         <div className="md:col-span-2">
           <Label>Content (HTML — basic tags allowed)</Label>
+          <div className="my-1">
+            <ProductLinkInserter onInsert={(s) => setForm((p) => ({ ...p, content_html: (p.content_html || "") + " " + s }))} />
+          </div>
           <Textarea rows={14} value={form.content_html} onChange={(e) => setForm({ ...form, content_html: e.target.value })} className="font-mono text-xs" />
           <p className="mt-1 text-xs text-muted-foreground">Use HTML tags like &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;strong&gt;, &lt;a href="…"&gt;.</p>
         </div>
