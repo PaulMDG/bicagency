@@ -39,6 +39,7 @@ import { Route as AdminSettingsWhatsappRouteImport } from './routes/admin/settin
 import { Route as AdminSettingsStoreRouteImport } from './routes/admin/settings/store'
 import { Route as AdminSettingsSeoRouteImport } from './routes/admin/settings/seo'
 import { Route as AdminSettingsMpesaRouteImport } from './routes/admin/settings/mpesa'
+import { Route as AdminSettingsAboutRouteImport } from './routes/admin/settings/about'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products/new'
 import { Route as AdminOrdersIdRouteImport } from './routes/admin/orders/$id'
 import { Route as AdminBlogNewRouteImport } from './routes/admin/blog/new'
@@ -196,6 +197,11 @@ const AdminSettingsMpesaRoute = AdminSettingsMpesaRouteImport.update({
   path: '/settings/mpesa',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsAboutRoute = AdminSettingsAboutRouteImport.update({
+  id: '/settings/about',
+  path: '/settings/about',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   id: '/products/new',
   path: '/products/new',
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/admin/blog/new': typeof AdminBlogNewRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/about': typeof AdminSettingsAboutRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
   '/admin/settings/seo': typeof AdminSettingsSeoRoute
   '/admin/settings/store': typeof AdminSettingsStoreRoute
@@ -286,6 +293,7 @@ export interface FileRoutesByTo {
   '/admin/blog/new': typeof AdminBlogNewRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/about': typeof AdminSettingsAboutRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
   '/admin/settings/seo': typeof AdminSettingsSeoRoute
   '/admin/settings/store': typeof AdminSettingsStoreRoute
@@ -324,6 +332,7 @@ export interface FileRoutesById {
   '/admin/blog/new': typeof AdminBlogNewRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/about': typeof AdminSettingsAboutRoute
   '/admin/settings/mpesa': typeof AdminSettingsMpesaRoute
   '/admin/settings/seo': typeof AdminSettingsSeoRoute
   '/admin/settings/store': typeof AdminSettingsStoreRoute
@@ -363,6 +372,7 @@ export interface FileRouteTypes {
     | '/admin/blog/new'
     | '/admin/orders/$id'
     | '/admin/products/new'
+    | '/admin/settings/about'
     | '/admin/settings/mpesa'
     | '/admin/settings/seo'
     | '/admin/settings/store'
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/admin/blog/new'
     | '/admin/orders/$id'
     | '/admin/products/new'
+    | '/admin/settings/about'
     | '/admin/settings/mpesa'
     | '/admin/settings/seo'
     | '/admin/settings/store'
@@ -436,6 +447,7 @@ export interface FileRouteTypes {
     | '/admin/blog/new'
     | '/admin/orders/$id'
     | '/admin/products/new'
+    | '/admin/settings/about'
     | '/admin/settings/mpesa'
     | '/admin/settings/seo'
     | '/admin/settings/store'
@@ -678,6 +690,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsMpesaRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings/about': {
+      id: '/admin/settings/about'
+      path: '/settings/about'
+      fullPath: '/admin/settings/about'
+      preLoaderRoute: typeof AdminSettingsAboutRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/products/new': {
       id: '/admin/products/new'
       path: '/products/new'
@@ -740,6 +759,7 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminOrdersIdRoute: typeof AdminOrdersIdRoute
   AdminProductsNewRoute: typeof AdminProductsNewRoute
+  AdminSettingsAboutRoute: typeof AdminSettingsAboutRoute
   AdminSettingsMpesaRoute: typeof AdminSettingsMpesaRoute
   AdminSettingsSeoRoute: typeof AdminSettingsSeoRoute
   AdminSettingsStoreRoute: typeof AdminSettingsStoreRoute
@@ -759,6 +779,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminOrdersIdRoute: AdminOrdersIdRoute,
   AdminProductsNewRoute: AdminProductsNewRoute,
+  AdminSettingsAboutRoute: AdminSettingsAboutRoute,
   AdminSettingsMpesaRoute: AdminSettingsMpesaRoute,
   AdminSettingsSeoRoute: AdminSettingsSeoRoute,
   AdminSettingsStoreRoute: AdminSettingsStoreRoute,
