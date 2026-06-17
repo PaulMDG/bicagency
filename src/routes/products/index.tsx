@@ -50,7 +50,11 @@ function ProductsPage() {
       if (q) qb = qb.ilike("name", `%${q}%`);
       if (cat) {
         const catId = (await supabase.from("categories").select("id").eq("slug", cat).maybeSingle()).data?.id;
-        if (catId) qb = qb.eq("category_id", catId);
+        if (catId) {
+          const links = await supabase.from("product_categories").select("product_id").eq("category_id", catId);
+          const ids = (links.data ?? []).map((r: any) => r.product_id);
+          qb = qb.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+        }
       }
       if (type === "wholesale") qb = qb.eq("wholesale_available", true);
       else if (type === "preorder") qb = qb.eq("preorder_available", true);
