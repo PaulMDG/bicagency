@@ -12,5 +12,7 @@ export const Route = createFileRoute("/admin/settings/store")({
     { key: "social_facebook", label: "Facebook URL" },
     { key: "social_instagram", label: "Instagram URL" },
     { key: "social_tiktok", label: "TikTok URL" },
+    { key: "social_twitter", label: "X / Twitter URL" },
+    { key: "social_youtube", label: "YouTube URL" },
   ]} />,
 });

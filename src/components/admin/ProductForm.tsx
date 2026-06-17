@@ -13,6 +13,8 @@ import { slugify } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { MultiImageUploader, type ProductImage } from "@/components/admin/MultiImageUploader";
 import { ProductLinkInserter } from "@/components/admin/ProductLinkInserter";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface FormVals {
   name: string; sku: string; slug: string; category_id: string; description: string;
@@ -24,6 +26,7 @@ interface FormVals {
   supplier_id?: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
+  video_url?: string | null;
 }
 
 export function ProductForm({ productId }: { productId?: string }) {
@@ -33,10 +36,11 @@ export function ProductForm({ productId }: { productId?: string }) {
   const { data: suppliers } = useQuery({ queryKey: ["form-suppliers"], queryFn: async () => (await supabase.from("suppliers").select("id,name").order("name")).data ?? [] });
   const { data: existing } = useQuery({
     queryKey: ["product-edit", productId],
-    queryFn: async () => productId ? (await supabase.from("products").select("*, product_images(image_url,is_primary,sort_order)").eq("id", productId).maybeSingle()).data : null,
+    queryFn: async () => productId ? (await supabase.from("products").select("*, product_images(image_url,is_primary,sort_order), product_categories(category_id)").eq("id", productId).maybeSingle()).data : null,
     enabled: !!productId,
   });
   const [images, setImages] = useState<ProductImage[]>([]);
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const watchCat = (val: string) => val;
   const { data: subcats } = useQuery({
     queryKey: ["form-subcats", productId],
@@ -51,7 +55,7 @@ export function ProductForm({ productId }: { productId?: string }) {
       wholesale_moq: 1, preorder_moq: 1, preorder_fallback: "retail",
       estimated_delivery_days: null, is_featured: false, is_active: true,
       subcategory_id: null, supplier_id: null,
-      seo_title: "", seo_description: "",
+      seo_title: "", seo_description: "", video_url: "",
     },
   });
 
@@ -65,9 +69,13 @@ export function ProductForm({ productId }: { productId?: string }) {
         supplier_id: existing.supplier_id ?? null,
         seo_title: existing.seo_title ?? "",
         seo_description: existing.seo_description ?? "",
+        video_url: existing.video_url ?? "",
       } as any);
       const imgs = (existing.product_images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order);
       setImages(imgs);
+      const linked = (existing.product_categories ?? []).map((r: any) => r.category_id);
+      const initial = existing.category_id ? Array.from(new Set([existing.category_id, ...linked])) : linked;
+      setCategoryIds(initial);
     }
   }, [existing]);
 
@@ -75,9 +83,11 @@ export function ProductForm({ productId }: { productId?: string }) {
   const filteredSubcats = (subcats ?? []).filter((s: any) => s.category_id === currentCat);
 
   async function onSubmit(v: FormVals) {
+    const primaryCat = v.category_id || categoryIds[0] || null;
+    const allCats = Array.from(new Set([...(primaryCat ? [primaryCat] : []), ...categoryIds]));
     const payload = {
       name: v.name, sku: v.sku || null, slug: v.slug || slugify(v.name),
-      category_id: v.category_id || null, description: v.description,
+      category_id: primaryCat, description: v.description,
       retail_price: v.retail_price, wholesale_price: v.wholesale_price || null,
       preorder_price: v.preorder_price || null, retail_stock: v.retail_stock,
       wholesale_available: v.wholesale_available, preorder_available: v.preorder_available,
@@ -89,6 +99,7 @@ export function ProductForm({ productId }: { productId?: string }) {
       supplier_id: v.supplier_id || null,
       seo_title: v.seo_title || null,
       seo_description: v.seo_description || null,
+      video_url: v.video_url || null,
     };
     try {
       let id = productId;
@@ -106,6 +117,10 @@ export function ProductForm({ productId }: { productId?: string }) {
             images.map((img, i) => ({ product_id: id!, image_url: img.image_url, is_primary: img.is_primary, sort_order: i })),
           );
         }
+        await supabase.from("product_categories").delete().eq("product_id", id);
+        if (allCats.length) {
+          await supabase.from("product_categories").insert(allCats.map((cid) => ({ product_id: id!, category_id: cid })));
+        }
       }
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -119,12 +134,33 @@ export function ProductForm({ productId }: { productId?: string }) {
       <section className="space-y-3 rounded-xl border bg-card p-5">
         <h2 className="font-medium">Basic info</h2>
         <Row><F label="Name"><Input {...form.register("name", { required: true })} onBlur={(e) => !form.getValues("slug") && form.setValue("slug", slugify(e.target.value))} /></F><F label="SKU"><Input {...form.register("sku")} /></F></Row>
-        <Row><F label="Slug"><Input {...form.register("slug")} /></F><F label="Category">
-          <Select value={form.watch("category_id")} onValueChange={(v) => form.setValue("category_id", v)}>
+        <Row><F label="Slug"><Input {...form.register("slug")} /></F><F label="Primary category">
+          <Select value={form.watch("category_id")} onValueChange={(v) => { form.setValue("category_id", v); if (!categoryIds.includes(v)) setCategoryIds((prev) => [...prev, v]); }}>
             <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>{(cats ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
           </Select>
         </F></Row>
+        <F label="Also belongs to (multi-select)">
+          <div className="flex flex-wrap gap-3 rounded-md border p-3">
+            {(cats ?? []).map((c) => {
+              const checked = categoryIds.includes(c.id);
+              const isPrimary = form.watch("category_id") === c.id;
+              return (
+                <label key={c.id} className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={checked}
+                    disabled={isPrimary}
+                    onCheckedChange={(v) =>
+                      setCategoryIds((prev) => v ? Array.from(new Set([...prev, c.id])) : prev.filter((x) => x !== c.id))
+                    }
+                  />
+                  {c.name}{isPrimary && <span className="text-xs text-muted-foreground">(primary)</span>}
+                </label>
+              );
+            })}
+            {(cats ?? []).length === 0 && <p className="text-xs text-muted-foreground">No categories yet.</p>}
+          </div>
+        </F>
         <Row>
           <F label="Subcategory">
             <Select value={form.watch("subcategory_id") ?? ""} onValueChange={(v) => form.setValue("subcategory_id", v || null)}>
@@ -140,11 +176,14 @@ export function ProductForm({ productId }: { productId?: string }) {
           </F>
         </Row>
         <F label="Description">
-          <div className="mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <ProductLinkInserter onInsert={(s) => form.setValue("description", (form.getValues("description") || "") + " " + s)} />
-            <p className="mt-1 text-xs text-muted-foreground">HTML allowed. Use the button to insert links to other products.</p>
+            <p className="text-xs text-muted-foreground">What you see is what you get. Use the button to insert links to other products.</p>
           </div>
-          <Textarea rows={6} {...form.register("description")} />
+          <RichTextEditor value={form.watch("description") || ""} onChange={(html) => form.setValue("description", html)} />
+        </F>
+        <F label="Video URL (YouTube / Vimeo / MP4)">
+          <Input type="url" placeholder="https://..." {...form.register("video_url")} />
         </F>
         <F label="Images">
           <MultiImageUploader value={images} onChange={setImages} />

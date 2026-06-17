@@ -16,12 +16,40 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { SocialShareButtons } from "@/components/store/SocialShareButtons";
 import { sanitizeHtml } from "@/lib/safe-html";
 
+function getEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtube.com")) {
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+    }
+    if (u.hostname === "youtu.be") return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+    if (u.hostname.includes("vimeo.com")) return `https://player.vimeo.com/video/${u.pathname.split("/").filter(Boolean).pop()}`;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function ProductVideo({ url }: { url: string }) {
+  const embed = getEmbedUrl(url);
+  if (embed) {
+    return (
+      <div className="mt-2 aspect-video overflow-hidden rounded-lg border">
+        <iframe src={embed} title="Product video" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="size-full" />
+      </div>
+    );
+  }
+  if (/\.(mp4|webm|ogg)(\?|$)/i.test(url)) {
+    return <video src={url} controls className="mt-2 w-full rounded-lg border" />;
+  }
+  return <a href={url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-primary underline">Watch video →</a>;
+}
+
 const productQuery = (slug: string) => ({
   queryKey: ["product", slug],
   queryFn: async () => {
     const { data, error } = await supabase
       .from("products")
-      .select("*, categories(name,slug), product_images(id,image_url,sort_order,is_primary), suppliers(id,name,contact_name,phone,email,address)")
+      .select("*, categories(name,slug), product_images(id,image_url,sort_order,is_primary)")
       .eq("slug", slug)
       .maybeSingle();
     if (error) throw error;
@@ -207,13 +235,10 @@ function ProductDetail() {
               />
             </div>
 
-            {product.suppliers && (
-              <div className="mt-6 rounded-xl border bg-card p-4 text-sm">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Sold by</div>
-                <div className="mt-1 font-medium">{(product.suppliers as any).name}</div>
-                {(product.suppliers as any).address && (
-                  <div className="text-xs text-muted-foreground">{(product.suppliers as any).address}</div>
-                )}
+            {product.video_url && (
+              <div className="mt-6">
+                <h3 className="font-medium">Product video</h3>
+                <ProductVideo url={product.video_url as string} />
               </div>
             )}
 

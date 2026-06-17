@@ -19,9 +19,12 @@ function CategoryPage() {
     queryKey: ["cat-products", slug],
     queryFn: async () => {
       if (!category?.id) return [];
+      const links = await supabase.from("product_categories").select("product_id").eq("category_id", category.id);
+      const ids = (links.data ?? []).map((r: any) => r.product_id);
+      if (ids.length === 0) return [];
       const { data } = await supabase.from("products")
         .select("id,name,slug,retail_price,wholesale_price,wholesale_available,preorder_available,retail_stock,product_images(image_url,is_primary,sort_order)")
-        .eq("is_active", true).eq("category_id", category.id);
+        .eq("is_active", true).in("id", ids);
       return (data ?? []).map((p: any) => ({
         id: p.id, name: p.name, slug: p.slug,
         retail_price: Number(p.retail_price),

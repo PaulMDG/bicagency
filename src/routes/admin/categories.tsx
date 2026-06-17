@@ -10,6 +10,8 @@ import { slugify } from "@/lib/format";
 import { toast } from "sonner";
 import { Trash2, Plus, ChevronRight } from "lucide-react";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/admin/categories")({ component: Categories });
 
@@ -20,6 +22,8 @@ function Categories() {
   const [form, setForm] = useState({ name: "", slug: "", description: "", image_url: "", seo_title: "", seo_description: "" });
   const [openCat, setOpenCat] = useState<string | null>(null);
   const [subForm, setSubForm] = useState({ name: "", slug: "" });
+  const [editCat, setEditCat] = useState<any | null>(null);
+  const [editSub, setEditSub] = useState<any | null>(null);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -46,6 +50,27 @@ function Categories() {
     if (error) toast.error(error.message); else qc.invalidateQueries({ queryKey: ["adm-subs"] });
   }
 
+  async function saveCat(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editCat) return;
+    const { id, name, slug, description, image_url, seo_title, seo_description } = editCat;
+    const { error } = await supabase.from("categories")
+      .update({ name, slug: slug || slugify(name), description, image_url, seo_title, seo_description })
+      .eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success("Updated"); setEditCat(null); qc.invalidateQueries({ queryKey: ["adm-cats"] }); }
+  }
+  async function saveSub(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editSub) return;
+    const { id, name, slug } = editSub;
+    const { error } = await supabase.from("subcategories")
+      .update({ name, slug: slug || slugify(name) })
+      .eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success("Updated"); setEditSub(null); qc.invalidateQueries({ queryKey: ["adm-subs"] }); }
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-[1fr_360px]">
       <div>
@@ -65,6 +90,7 @@ function Categories() {
                       <div className="text-xs text-muted-foreground">/{c.slug} · {mySubs.length} subcategories</div>
                     </div>
                   </button>
+                  <Button size="sm" variant="ghost" onClick={() => setEditCat({ ...c })}><Pencil className="size-3.5" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => del(c.id)}><Trash2 className="size-3.5 text-destructive" /></Button>
                 </div>
                 {isOpen && (
@@ -74,6 +100,7 @@ function Categories() {
                       <div key={s.id} className="flex items-center gap-2 rounded-md bg-card px-3 py-1.5 text-sm">
                         <span className="flex-1">{s.name}</span>
                         <span className="font-mono text-xs text-muted-foreground">{s.slug}</span>
+                        <Button size="sm" variant="ghost" onClick={() => setEditSub({ ...s })}><Pencil className="size-3" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => delSub(s.id)}><Trash2 className="size-3 text-destructive" /></Button>
                       </div>
                     ))}
@@ -102,6 +129,38 @@ function Categories() {
         <div><Label>SEO description</Label><Textarea value={form.seo_description} onChange={(e) => setForm({ ...form, seo_description: e.target.value })} /></div>
         <Button type="submit">Add</Button>
       </form>
+
+      <Dialog open={!!editCat} onOpenChange={(v) => !v && setEditCat(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit category</DialogTitle></DialogHeader>
+          {editCat && (
+            <form onSubmit={saveCat} className="space-y-3">
+              <div><Label>Name</Label><Input value={editCat.name ?? ""} onChange={(e) => setEditCat({ ...editCat, name: e.target.value })} /></div>
+              <div><Label>Slug</Label><Input value={editCat.slug ?? ""} onChange={(e) => setEditCat({ ...editCat, slug: e.target.value })} /></div>
+              <div><Label>Description</Label><Textarea value={editCat.description ?? ""} onChange={(e) => setEditCat({ ...editCat, description: e.target.value })} /></div>
+              <div><Label>Image</Label>
+                <ImageUploadField bucket="category-images" value={editCat.image_url ?? ""} onChange={(v) => setEditCat({ ...editCat, image_url: v })} maxWidth={512} label="Upload (auto-resized)" />
+              </div>
+              <div><Label>SEO title</Label><Input value={editCat.seo_title ?? ""} onChange={(e) => setEditCat({ ...editCat, seo_title: e.target.value })} /></div>
+              <div><Label>SEO description</Label><Textarea value={editCat.seo_description ?? ""} onChange={(e) => setEditCat({ ...editCat, seo_description: e.target.value })} /></div>
+              <DialogFooter><Button type="submit">Save</Button></DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editSub} onOpenChange={(v) => !v && setEditSub(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit subcategory</DialogTitle></DialogHeader>
+          {editSub && (
+            <form onSubmit={saveSub} className="space-y-3">
+              <div><Label>Name</Label><Input value={editSub.name ?? ""} onChange={(e) => setEditSub({ ...editSub, name: e.target.value })} /></div>
+              <div><Label>Slug</Label><Input value={editSub.slug ?? ""} onChange={(e) => setEditSub({ ...editSub, slug: e.target.value })} /></div>
+              <DialogFooter><Button type="submit">Save</Button></DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
