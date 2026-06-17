@@ -158,3 +158,20 @@
     color: var(--color-foreground);
   }
 }
+
+/* Rich text editor (Quill) */
+.rich-text-editor .ql-toolbar {
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-top-left-radius: calc(var(--radius) - 2px);
+  border-top-right-radius: calc(var(--radius) - 2px);
+}
+.rich-text-editor .ql-container {
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  min-height: 220px;
+}
+.rich-text-editor .ql-editor {
+  min-height: 220px;
+}
