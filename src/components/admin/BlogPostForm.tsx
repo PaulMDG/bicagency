@@ -12,6 +12,7 @@ import { sanitizeHtml } from "@/lib/safe-html";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ProductLinkInserter } from "@/components/admin/ProductLinkInserter";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 type Form = {
   slug: string; title: string; excerpt: string; content_html: string;
@@ -85,12 +86,12 @@ export function BlogPostForm({ postId }: { postId?: string }) {
           {uploading && <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Loader2 className="size-3 animate-spin" /> Uploading…</p>}
         </div>
         <div className="md:col-span-2">
-          <Label>Content (HTML — basic tags allowed)</Label>
-          <div className="my-1">
+          <Label>Content</Label>
+          <div className="my-1 flex items-center gap-2">
             <ProductLinkInserter onInsert={(s) => setForm((p) => ({ ...p, content_html: (p.content_html || "") + " " + s }))} />
+            <p className="text-xs text-muted-foreground">What you see is what you get.</p>
           </div>
-          <Textarea rows={14} value={form.content_html} onChange={(e) => setForm({ ...form, content_html: e.target.value })} className="font-mono text-xs" />
-          <p className="mt-1 text-xs text-muted-foreground">Use HTML tags like &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;strong&gt;, &lt;a href="…"&gt;.</p>
+          <RichTextEditor value={form.content_html} onChange={(html) => setForm((p) => ({ ...p, content_html: html }))} />
         </div>
         <div><Label>SEO title</Label><Input value={form.seo_title} onChange={(e) => setForm({ ...form, seo_title: e.target.value })} /></div>
         <div><Label>SEO description</Label><Input value={form.seo_description} onChange={(e) => setForm({ ...form, seo_description: e.target.value })} /></div>
