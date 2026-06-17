@@ -21,7 +21,7 @@ const productQuery = (slug: string) => ({
   queryFn: async () => {
     const { data, error } = await supabase
       .from("products")
-      .select("*, categories(name,slug), product_images(id,image_url,sort_order,is_primary), suppliers(id,name,contact_name,phone,email,address)")
+      .select("*, categories(name,slug), product_images(id,image_url,sort_order,is_primary)")
       .eq("slug", slug)
       .maybeSingle();
     if (error) throw error;
@@ -207,13 +207,10 @@ function ProductDetail() {
               />
             </div>
 
-            {product.suppliers && (
-              <div className="mt-6 rounded-xl border bg-card p-4 text-sm">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Sold by</div>
-                <div className="mt-1 font-medium">{(product.suppliers as any).name}</div>
-                {(product.suppliers as any).address && (
-                  <div className="text-xs text-muted-foreground">{(product.suppliers as any).address}</div>
-                )}
+            {product.video_url && (
+              <div className="mt-6">
+                <h3 className="font-medium">Product video</h3>
+                <ProductVideo url={product.video_url as string} />
               </div>
             )}
 
