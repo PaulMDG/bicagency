@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, CreditCard, Settings, LogOut, Menu, X, Truck, Users, FileText, Search } from "lucide-react";
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, CreditCard, Settings, LogOut, Menu, X, Truck, Users, FileText, Search, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/admin")({ component: AdminShell });
@@ -47,6 +47,7 @@ function AdminShell() {
     { to: "/admin/customers", label: "Customers", icon: Users },
     { to: "/admin/blog", label: "Blog", icon: FileText },
     { to: "/admin/settings/store", label: "Store settings", icon: Settings },
+    { to: "/admin/settings/about", label: "About page", icon: Info },
     { to: "/admin/settings/seo", label: "SEO settings", icon: Search },
     { to: "/admin/settings/mpesa", label: "M-Pesa settings", icon: Settings },
     { to: "/admin/settings/whatsapp", label: "WhatsApp settings", icon: Settings },
