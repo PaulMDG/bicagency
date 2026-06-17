@@ -16,6 +16,34 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { SocialShareButtons } from "@/components/store/SocialShareButtons";
 import { sanitizeHtml } from "@/lib/safe-html";
 
+function getEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtube.com")) {
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+    }
+    if (u.hostname === "youtu.be") return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+    if (u.hostname.includes("vimeo.com")) return `https://player.vimeo.com/video/${u.pathname.split("/").filter(Boolean).pop()}`;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function ProductVideo({ url }: { url: string }) {
+  const embed = getEmbedUrl(url);
+  if (embed) {
+    return (
+      <div className="mt-2 aspect-video overflow-hidden rounded-lg border">
+        <iframe src={embed} title="Product video" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="size-full" />
+      </div>
+    );
+  }
+  if (/\.(mp4|webm|ogg)(\?|$)/i.test(url)) {
+    return <video src={url} controls className="mt-2 w-full rounded-lg border" />;
+  }
+  return <a href={url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-primary underline">Watch video →</a>;
+}
+
 const productQuery = (slug: string) => ({
   queryKey: ["product", slug],
   queryFn: async () => {
