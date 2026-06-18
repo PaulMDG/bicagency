@@ -13,8 +13,8 @@ export const Route = createFileRoute("/admin/login")({ component: AdminLogin });
 function AdminLogin() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("admin@store.co.ke");
-  const [password, setPassword] = useState("Admin@1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   async function signin(e: React.FormEvent) {
     e.preventDefault(); setLoading(true);
@@ -40,24 +40,11 @@ function AdminLogin() {
       <div className="w-full max-w-md rounded-2xl border bg-card p-6 shadow-sm">
         <h1 className="font-display text-2xl">Admin access</h1>
         <p className="text-sm text-muted-foreground">Sign in to manage your store.</p>
-        <Tabs defaultValue="signin" className="mt-4">
-          <TabsList className="grid w-full grid-cols-2"><TabsTrigger value="signin">Sign in</TabsTrigger><TabsTrigger value="signup">Create first admin</TabsTrigger></TabsList>
-          <TabsContent value="signin">
-            <form onSubmit={signin} className="space-y-3">
-              <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
-              <Field label="Password"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></Field>
-              <Button type="submit" className="w-full" disabled={loading}>{loading && <Loader2 className="size-4 animate-spin" />} Sign in</Button>
-            </form>
-          </TabsContent>
-          <TabsContent value="signup">
-            <form onSubmit={signup} className="space-y-3">
-              <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
-              <Field label="Password"><Input type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required /></Field>
-              <Button type="submit" className="w-full" disabled={loading}>{loading && <Loader2 className="size-4 animate-spin" />} Create admin</Button>
-              <p className="text-xs text-muted-foreground">Only allowed if no admin exists yet.</p>
-            </form>
-          </TabsContent>
-        </Tabs>
+        <form onSubmit={signin} className="mt-4 space-y-3">
+          <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" /></Field>
+          <Field label="Password"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" /></Field>
+          <Button type="submit" className="w-full" disabled={loading}>{loading && <Loader2 className="size-4 animate-spin" />} Sign in</Button>
+        </form>
       </div>
     </div>
   );
