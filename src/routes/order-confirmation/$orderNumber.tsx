@@ -68,7 +68,11 @@ function Confirmation() {
           <h1 className="mt-3 font-display text-3xl">Thank you for your order!</h1>
           <p className="mt-2 text-muted-foreground">Your order number is</p>
           <div className="mt-2 font-mono text-lg font-semibold">{orderNumber}</div>
-          {isLoading ? null : order ? (
+          {!phone ? (
+            <div className="mt-6 rounded-md border bg-muted/40 p-4 text-sm text-muted-foreground">
+              For security, order details are linked to your phone. <Link to="/track" className="text-primary underline">Track your order</Link> using this order number and the phone you used at checkout.
+            </div>
+          ) : isLoading ? null : order ? (
             <div className="mt-6 text-left">
               <div className="text-sm text-muted-foreground">Status: <span className="font-medium capitalize text-foreground">{order.order_status}</span> · Payment: <span className="font-medium capitalize text-foreground">{order.payment_status}</span></div>
               <hr className="my-4" />
