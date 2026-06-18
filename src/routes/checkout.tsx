@@ -122,6 +122,12 @@ function Checkout() {
       }
 
       clear();
+      try {
+        sessionStorage.setItem(
+          `order:${created.order_number}`,
+          JSON.stringify({ phone: normalizeKenyanPhone(values.phone)! }),
+        );
+      } catch { /* sessionStorage may be unavailable */ }
       navigate({ to: "/order-confirmation/$orderNumber", params: { orderNumber: created.order_number } });
     } catch (e: any) {
       console.error(e);
