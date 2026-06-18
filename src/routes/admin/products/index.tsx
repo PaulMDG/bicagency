@@ -16,7 +16,7 @@ function AdminProducts() {
   const { data: products } = useQuery({
     queryKey: ["admin-products", q],
     queryFn: async () => {
-      let qb = supabase.from("products").select("id,name,sku,retail_price,retail_stock,is_active,wholesale_available,preorder_available,categories(name)").order("created_at", { ascending: false });
+      let qb = supabase.from("products").select("id,name,sku,retail_price,retail_stock,is_active,wholesale_available,preorder_available,categories!products_category_id_fkey(name)").order("created_at", { ascending: false });
       if (q.trim()) qb = qb.or(`name.ilike.%${q}%,sku.ilike.%${q}%`);
       return (await qb).data ?? [];
     },
