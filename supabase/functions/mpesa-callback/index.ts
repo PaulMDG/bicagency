@@ -8,12 +8,48 @@ const corsHeaders = {
 
 // Receives Daraja STK Push callbacks. Always respond 200 with ResultCode 0 so
 // Safaricom does not retry indefinitely — we log errors internally.
+//
+// SECURITY: Verifies the request is genuine before mutating order/payment state.
+// Two independent checks (either one is sufficient):
+//   1. Shared-secret token in the URL query (?token=...) matching MPESA_CALLBACK_TOKEN
+//   2. Source IP belongs to Safaricom's published Daraja ranges
+const SAFARICOM_IP_PREFIXES = [
+  "196.201.214.", "196.201.213.", "196.201.212.",
+  "196.201.215.", "196.201.216.", "196.201.217.",
+  "196.201.218.", "196.201.219.",
+];
+
+function callerIp(req: Request): string {
+  const xf = req.headers.get("x-forwarded-for") ?? "";
+  return xf.split(",")[0].trim() || req.headers.get("cf-connecting-ip") || "";
+}
+
+function isAuthorized(req: Request): boolean {
+  const expected = Deno.env.get("MPESA_CALLBACK_TOKEN");
+  if (expected) {
+    const url = new URL(req.url);
+    if (url.searchParams.get("token") === expected) return true;
+    if (req.headers.get("x-mpesa-token") === expected) return true;
+  }
+  const ip = callerIp(req);
+  if (ip && SAFARICOM_IP_PREFIXES.some((p) => ip.startsWith(p))) return true;
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const ok = () =>
     new Response(JSON.stringify({ ResultCode: 0, ResultDesc: "Accepted" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
+  if (!isAuthorized(req)) {
+    console.warn("mpesa-callback: rejected unauthenticated request", { ip: callerIp(req) });
+    return new Response(JSON.stringify({ ResultCode: 1, ResultDesc: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   let body: any = null;
   try {

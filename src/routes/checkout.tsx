@@ -90,12 +90,15 @@ function Checkout() {
           // Poll order status for up to 90s — callback will flip payment_status to "paid".
           const start = Date.now();
           pollRef.current = setInterval(async () => {
-            const { data: o } = await supabase
-              .from("orders").select("payment_status").eq("id", created.order_id).maybeSingle();
-            if (o?.payment_status === "paid") {
+            const { data: o } = await supabase.rpc("get_order_payment_status", {
+              p_order_id: created.order_id,
+              p_phone: normalizeKenyanPhone(values.phone)!,
+            });
+            const status = (o as { payment_status?: string } | null)?.payment_status;
+            if (status === "paid") {
               if (pollRef.current) clearInterval(pollRef.current);
               setStkStatus("success");
-            } else if (["failed", "cancelled"].includes(o?.payment_status ?? "")) {
+            } else if (["failed", "cancelled"].includes(status ?? "")) {
               if (pollRef.current) clearInterval(pollRef.current);
               setStkStatus("failed");
             } else if (Date.now() - start > 90_000) {
@@ -119,6 +122,12 @@ function Checkout() {
       }
 
       clear();
+      try {
+        sessionStorage.setItem(
+          `order:${created.order_number}`,
+          JSON.stringify({ phone: normalizeKenyanPhone(values.phone)! }),
+        );
+      } catch { /* sessionStorage may be unavailable */ }
       navigate({ to: "/order-confirmation/$orderNumber", params: { orderNumber: created.order_number } });
     } catch (e: any) {
       console.error(e);
