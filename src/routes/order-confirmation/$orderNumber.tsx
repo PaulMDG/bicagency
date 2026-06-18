@@ -18,21 +18,29 @@ function Confirmation() {
   const { orderNumber } = Route.useParams();
   const { data: settings } = useSettings();
   const [copied, setCopied] = useState(false);
-  const { data: order, isLoading } = useQuery({
-    queryKey: ["order", orderNumber],
+  const phone = (() => {
+    try {
+      const raw = sessionStorage.getItem(`order:${orderNumber}`);
+      return raw ? (JSON.parse(raw).phone as string | undefined) : undefined;
+    } catch { return undefined; }
+  })();
+  const { data: tracked, isLoading } = useQuery({
+    queryKey: ["order-confirmation", orderNumber, phone],
+    enabled: !!phone,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("orders")
-        .select("*, order_items(*, products(estimated_delivery_days,preorder_moq,wholesale_moq))")
-        .eq("order_number", orderNumber)
-        .maybeSingle();
-      return data;
+      const { data } = await supabase.rpc("track_order", {
+        p_order_number: orderNumber,
+        p_phone: phone!,
+      });
+      const d = data as { order?: any; items?: any[]; error?: string } | null;
+      if (!d || d.error) return null;
+      return d;
     },
   });
-
-  const items = order?.order_items ?? [];
+  const order = tracked?.order ?? null;
+  const items = tracked?.items ?? [];
   const preorderItems = items.filter((i: any) => i.purchase_type === "preorder");
-  const maxEta = preorderItems.reduce((m: number, i: any) => Math.max(m, i.products?.estimated_delivery_days ?? 0), 0);
+  const maxEta = 0;
 
   const summary = items.map((i: any) =>
     `• ${i.product_name} x${i.quantity} (${i.purchase_type}) @ ${Number(i.unit_price).toLocaleString()}`
