@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -23,17 +22,7 @@ function AdminLogin() {
     if (error) { toast.error(error.message); return; }
     navigate({ to: "/admin" });
   }
-  async function signup(e: React.FormEvent) {
-    e.preventDefault(); setLoading(true);
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/admin" } });
-    if (error) { setLoading(false); toast.error(error.message); return; }
-    try {
-      await supabase.functions.invoke("bootstrap-admin", { body: { user_id: data.user?.id } });
-      toast.success("Admin account created — signing in…");
-      await supabase.auth.signInWithPassword({ email, password });
-      navigate({ to: "/admin" });
-    } catch (e: any) { toast.error(e.message); } finally { setLoading(false); }
-  }
+  // Self-signup is disabled. Admin accounts are provisioned by the project owner.
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4 font-sans">
