@@ -6,21 +6,34 @@ import { formatKES } from "@/lib/format";
 import { Plus, Trash2, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/admin/products/")({ component: AdminProducts });
 
 function AdminProducts() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
-  const { data: products } = useQuery({
-    queryKey: ["admin-products", q],
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+  useEffect(() => { setPage(1); }, [q]);
+  const { data } = useQuery({
+    queryKey: ["admin-products", q, page],
     queryFn: async () => {
-      let qb = supabase.from("products").select("id,name,sku,retail_price,retail_stock,is_active,wholesale_available,preorder_available,categories!products_category_id_fkey(name)").order("created_at", { ascending: false });
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      let qb = supabase
+        .from("products")
+        .select("id,name,sku,retail_price,retail_stock,is_active,wholesale_available,preorder_available,categories!products_category_id_fkey(name)", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
       if (q.trim()) qb = qb.or(`name.ilike.%${q}%,sku.ilike.%${q}%`);
-      return (await qb).data ?? [];
+      const { data, count } = await qb;
+      return { rows: data ?? [], count: count ?? 0 };
     },
   });
+  const products = data?.rows ?? [];
+  const total = data?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   async function del(id: string) {
     if (!confirm("Delete this product?")) return;
@@ -42,7 +55,7 @@ function AdminProducts() {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left text-xs"><tr><th className="p-3">Name</th><th>SKU</th><th>Category</th><th>Price</th><th>Stock</th><th>Types</th><th>Status</th><th></th></tr></thead>
           <tbody>
-            {(products ?? []).map((p: any) => (
+            {products.map((p: any) => (
               <tr key={p.id} className="border-t">
                 <td className="p-3 font-medium">{p.name}</td>
                 <td className="font-mono text-xs">{p.sku}</td>
@@ -59,6 +72,16 @@ function AdminProducts() {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-muted-foreground">
+          {total === 0 ? "No products" : `Showing ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total}`}
+        </span>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Previous</Button>
+          <span>Page {page} of {totalPages}</span>
+          <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</Button>
+        </div>
       </div>
     </div>
   );
