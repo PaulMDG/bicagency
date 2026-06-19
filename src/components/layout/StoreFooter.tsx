@@ -45,6 +45,7 @@ export function StoreFooter() {
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li><Link to="/about" className="hover:text-primary">About us</Link></li>
             <li><Link to="/blog" className="hover:text-primary">Blog & News</Link></li>
+            <li><Link to="/privacy" className="hover:text-primary">Privacy & Trust</Link></li>
             <li>{s.contact_phone}</li>
             <li>{s.contact_email}</li>
           </ul>
