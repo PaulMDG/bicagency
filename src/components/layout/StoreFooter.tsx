@@ -17,7 +17,7 @@ export function StoreFooter() {
     <footer className="mt-16 border-t bg-card">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4">
         <div>
-          <div className="font-display text-xl text-primary">{s.store_name ?? "Sokoni KE"}</div>
+          <div className="font-display text-xl text-primary">{s.store_name ?? "Blessmarked Shop"}</div>
           <p className="mt-2 text-sm text-muted-foreground">{s.store_tagline}</p>
           <p className="mt-3 text-xs text-muted-foreground">{s.physical_address}</p>
           {socials.length > 0 && (
@@ -65,7 +65,7 @@ export function StoreFooter() {
         </div>
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} {s.store_name ?? "Sokoni KE"}. All rights reserved.
+        © {new Date().getFullYear()} {s.store_name ?? "Blessmarked Shop"}. All rights reserved.
       </div>
     </footer>
   );

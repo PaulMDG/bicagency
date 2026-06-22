@@ -12,7 +12,7 @@ import { ShieldCheck, Truck, Sparkles, Smartphone, Package, ShoppingBag, CreditC
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Sokoni KE — Retail, Wholesale & Preorder | Pay with M-Pesa" },
+      { title: "Blessmarked Shop — Retail, Wholesale & Preorder | Pay with M-Pesa" },
       { name: "description", content: "Shop electronics, fashion and home essentials. Retail, wholesale and preorder pricing. Pay via M-Pesa or order on WhatsApp." },
     ],
   }),
