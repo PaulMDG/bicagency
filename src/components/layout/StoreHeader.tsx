@@ -9,7 +9,7 @@ export function StoreHeader() {
   const { data: settings } = useSettings();
   const waNumber = settings?.whatsapp_number ?? "254700000000";
   const greeting = settings?.whatsapp_greeting ?? "Hello!";
-  const storeName = settings?.store_name ?? "Sokoni KE";
+  const storeName = settings?.store_name ?? "Blessmarked Shop";
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
