@@ -15,7 +15,7 @@ export const Route = createFileRoute("/track")({
   }),
   head: () => ({
     meta: [
-      { title: "Track your order — Sokoni KE" },
+      { title: "Track your order — Blessmarked Shop" },
       { name: "description", content: "Check the status of your order, payment and delivery progress." },
     ],
   }),
