@@ -227,10 +227,10 @@ function ProductDetail() {
               <SocialShareButtons url={productUrl} title={product.name} />
             </div>
 
-            <div className="mt-8">
+            <div className="mt-8 rounded-xl border bg-card p-4">
               <h3 className="font-medium">Description</h3>
               <div
-                className="prose prose-sm mt-2 max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline"
+                className="prose prose-sm mt-2 max-w-none break-words text-muted-foreground [&_a]:text-primary [&_a]:underline"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description ?? "") }}
               />
             </div>
