@@ -31,7 +31,11 @@ function BlogIndex() {
               <div className="p-4">
                 <h2 className="font-display text-xl">{p.title}</h2>
                 <p className="mt-1 text-xs text-muted-foreground">{p.author ?? ""} · {p.published_at ? new Date(p.published_at).toLocaleDateString() : ""}</p>
-                {p.excerpt && <p className="mt-3 text-sm text-muted-foreground">{p.excerpt}</p>}
+                {p.excerpt && (
+                  <p className="mt-3 break-words hyphens-auto text-sm text-muted-foreground">
+                    {p.excerpt}
+                  </p>
+                )}
               </div>
             </Link>
           ))}
