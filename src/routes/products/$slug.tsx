@@ -49,7 +49,7 @@ const productQuery = (slug: string) => ({
   queryFn: async () => {
     const { data, error } = await supabase
       .from("products")
-      .select("*, categories!products_category_id_fkey(name,slug), product_images(id,image_url,sort_order,is_primary)")
+      .select("id, category_id, name, slug, sku, description, retail_price, wholesale_price, preorder_price, retail_stock, wholesale_available, preorder_available, wholesale_moq, preorder_moq, preorder_fallback, estimated_delivery_days, is_featured, is_active, subcategory_id, seo_title, seo_description, video_url, categories!products_category_id_fkey(name,slug), product_images(id,image_url,sort_order,is_primary)")
       .eq("slug", slug)
       .maybeSingle();
     if (error) throw error;
