@@ -49,7 +49,7 @@ const productQuery = (slug: string) => ({
   queryFn: async () => {
     const { data, error } = await supabase
       .from("products")
-      .select("*, categories!products_category_id_fkey(name,slug), product_images(id,image_url,sort_order,is_primary)")
+      .select("id, category_id, name, slug, sku, description, retail_price, wholesale_price, preorder_price, retail_stock, wholesale_available, preorder_available, wholesale_moq, preorder_moq, preorder_fallback, estimated_delivery_days, is_featured, is_active, subcategory_id, seo_title, seo_description, video_url, categories!products_category_id_fkey(name,slug), product_images(id,image_url,sort_order,is_primary)")
       .eq("slug", slug)
       .maybeSingle();
     if (error) throw error;
@@ -227,10 +227,10 @@ function ProductDetail() {
               <SocialShareButtons url={productUrl} title={product.name} />
             </div>
 
-            <div className="mt-8">
+            <div className="mt-8 rounded-xl border bg-card p-4">
               <h3 className="font-medium">Description</h3>
               <div
-                className="prose prose-sm mt-2 max-w-none text-muted-foreground [&_a]:text-primary [&_a]:underline"
+                className="prose prose-sm mt-2 max-w-none break-words text-muted-foreground [&_a]:text-primary [&_a]:underline"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description ?? "") }}
               />
             </div>
