@@ -45,7 +45,7 @@ function BlogDetail() {
         <h1 className="mt-4 font-display text-4xl">{post.title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{post.author ?? ""} · {post.published_at ? new Date(post.published_at).toLocaleDateString() : ""}</p>
         {post.cover_image_url && <img src={post.cover_image_url} alt="" className="my-8 aspect-[16/9] w-full rounded-xl object-cover" />}
-        <div className="prose prose-sm max-w-none break-words [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-2xl [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-primary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content_html ?? "") }} />
+        <div className="prose prose-sm mt-6 max-w-none break-words rounded-xl border bg-card p-5 [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-2xl [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-primary" dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content_html ?? "") }} />
         <div className="mt-10 border-t pt-6">
           <div className="mb-2 text-sm font-medium">Share this post</div>
           <SocialShareButtons url={url} title={post.title} />
